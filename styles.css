@@ -7,3 +7,4 @@
 .hero:before{background-image:url('assets/hero-bg-desktop-hq.png');background-position:center;background-size:cover;opacity:.88}@media(max-width:600px){.hero:before{background-image:url('assets/hero-bg.png');background-position:center top;opacity:.82}}
 .hero .logo{display:block;margin-bottom:22px}.hero .eyebrow{display:inline-flex}
 .hero-visual{display:none}.hero-inner{grid-template-columns:minmax(0,620px);justify-content:start}
+.result-hero h1{color:#0b1f43}.score-card b{font-size:70px;line-height:1;color:#0b1f43;letter-spacing:-.05em}@media(max-width:600px){.score-card b{font-size:56px}}
