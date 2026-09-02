@@ -9,7 +9,7 @@
   </style>
 </head>
 <body><main class="admin"><div class="wrap">
-  <div class="admin-head"><div><a href="index.html">← 진단 화면</a><h1>진단 응답 관리자</h1><p>고객 정보와 진단 응답을 선택·관리하고 CSV로 내려받습니다.</p></div><div class="admin-actions"><button id="delete" class="btn btn-secondary danger" disabled>선택 삭제</button><button id="csv" class="btn btn-primary">CSV 내보내기</button></div></div>
+  <div class="admin-head"><div><a href="index.html">← 진단 화면</a><h1>진단 응답 관리자</h1><p>고객 정보와 진단 응답을 선택·관리하고 엑셀로 내려받습니다.</p></div><div class="admin-actions"><button id="delete" class="btn btn-secondary danger" disabled>선택 삭제</button><button id="csv" class="btn btn-primary">엑셀로 다운로드</button></div></div>
   <div class="stats"><div class="panel stat"><span>전체 응답</span><strong id="count">0</strong></div><div class="panel stat"><span>평균 점수</span><strong id="avg">0</strong></div><div class="panel stat"><span>최근 응답</span><strong id="recent">-</strong></div></div>
   <section class="panel table-wrap"><table class="data"><thead><tr><th><input id="select-all" type="checkbox" aria-label="전체 선택"></th><th>응답일</th><th>회사명</th><th>담당자</th><th>연락처</th><th>이메일</th><th>점수</th><th>레벨</th><th>변화</th><th>디지털</th><th>AI</th><th>조직</th></tr></thead><tbody id="rows"></tbody></table></section>
   <p class="privacy admin-note">운영 DB 연결 전에는 이 브라우저에 저장된 테스트 응답을 표시합니다. 원격 운영 환경에서는 config.js의 관리자 API와 인증 토큰을 연결하세요.</p>
