@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = {
   "access-control-allow-origin": "*",
   "access-control-allow-headers": "authorization, content-type",
-  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
 };
 
 Deno.serve(async (req) => {
@@ -44,6 +44,23 @@ Deno.serve(async (req) => {
     }
     const { data, error } = await db.from("axdx_responses").select("*").order("created_at");
     return Response.json(error ? { error: error.message } : data, {
+      status: error ? 400 : 200,
+      headers: cors,
+    });
+  }
+
+  if (req.method === "DELETE") {
+    const expected = Deno.env.get("ADMIN_TOKEN");
+    const supplied = req.headers.get("authorization")?.replace("Bearer ", "");
+    if (!expected || supplied !== expected) {
+      return Response.json({ error: "unauthorized" }, { status: 401, headers: cors });
+    }
+    const { ids } = await req.json();
+    if (!Array.isArray(ids) || !ids.length || ids.length > 100) {
+      return Response.json({ error: "invalid ids" }, { status: 400, headers: cors });
+    }
+    const { error } = await db.from("axdx_responses").delete().in("id", ids);
+    return Response.json(error ? { error: error.message } : { ok: true }, {
       status: error ? 400 : 200,
       headers: cors,
     });
