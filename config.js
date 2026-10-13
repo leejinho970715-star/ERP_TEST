@@ -1,7 +1,7 @@
 window.AXDX_CONFIG = {
-  // 운영 DB 연결 시 Supabase Edge Function URL을 입력하세요.
-  submitEndpoint: "",
-  adminEndpoint: "",
-  personalSubmitEndpoint: "",
-  personalAdminEndpoint: ""
+  publishableKey: "sb_publishable_CMvkqnGdR5LtouxgY7NdWA_NttFgWw5",
+  submitEndpoint: "https://uzvonfdifmbqdrsxzbcm.supabase.co/functions/v1/axdx-responses",
+  adminEndpoint: "https://uzvonfdifmbqdrsxzbcm.supabase.co/functions/v1/axdx-responses",
+  personalSubmitEndpoint: "https://uzvonfdifmbqdrsxzbcm.supabase.co/functions/v1/axdx-responses?type=personal",
+  personalAdminEndpoint: "https://uzvonfdifmbqdrsxzbcm.supabase.co/functions/v1/axdx-responses?type=personal"
 };
