@@ -7,11 +7,11 @@ create table if not exists public.axdx_responses (
   email text not null,
   answers jsonb not null,
   answer_labels jsonb not null,
-  total integer not null check (total between 0 and 30),
-  total_100 integer not null check (total_100 between 0 and 100),
-  level integer not null check (level between 1 and 4),
-  axis_scores jsonb not null,
-  profile_scores jsonb not null,
+  total integer check (total between 0 and 30),
+  total_100 integer check (total_100 between 0 and 100),
+  level integer check (level between 1 and 4),
+  axis_scores jsonb,
+  profile_scores jsonb,
   profile_type text not null,
   unknown_count integer not null default 0
 );
