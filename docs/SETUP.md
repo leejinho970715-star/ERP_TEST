@@ -1,70 +1,71 @@
-# ERP_TEST 작업 환경
+# ERP 진단 구현 및 운영
 
-## 저장소
+## 저장소와 배포
 
-- 작업·푸시 대상: `https://github.com/leejinho970715-star/ERP_TEST.git` (`origin`)
+- 작업 저장소: `https://github.com/leejinho970715-star/ERP_TEST.git` (`origin`)
 - 원본 참조: `https://github.com/leejinho970715-star/AX-DX_TEST.git` (`upstream`)
-- 기본 작업 브랜치: `main`
-- 가져온 원본 커밋: `772ea837e2001591340773b2aa9b61366cc1fbb9`
-- 초기 가져오기에서는 원본 커밋 이력, 정적 페이지, 이미지, SQL 및 함수 소스를 유지했습니다.
+- 기본 브랜치: `main`; 기본 push 대상: `origin`.
+- 기존 AX/DX 원본은 Git 이력과 `axdx-legacy.html` 등에 남아 있습니다. ERP 배포 빌드는 ERP 파일만 `dist/`에 포함합니다.
+- 로컬: `npm run dev`, 테스트: `npm test`, 정적 빌드: `npm run build`.
+- Vercel: 새 프로젝트에서 ERP_TEST를 import. `vercel.json`이 `node scripts/build-site.mjs` 빌드 및 `dist` 출력을 지정합니다.
+- OG URL은 빌드 시 `SITE_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, `VERCEL_URL` 순으로 절대 URL을 생성합니다. Vercel 시스템 환경변수를 사용하지 않는 호스팅에서는 `SITE_URL`을 지정하세요.
+- 새 프런트엔드 사이트는 아직 외부 배포하지 않았습니다. 기존 AX/DX Vercel 사이트에는 변경을 적용하지 않았습니다.
 
-현재 작업 폴더의 기본 push 대상은 `origin`입니다. 추가 기능은 필요에 따라 `codex/기능명` 브랜치에서 개발할 수 있습니다.
+## 추천 규칙 v1
 
-```powershell
-git status
-git add <변경한 파일>
-git commit -m "변경 내용"
-git push origin main
-```
+추천은 기획을 구체화한 휴리스틱이며 더존의 공식 평가 기준이나 통계적 구매 확률이 아닙니다. 기술 업종의 실제 원재료비·마진을 추정하지 않고, 연구·인력·프로젝트 관리 수요에 가중치를 둡니다.
 
-## 실행 및 배포
+| 영역 | 가중치 |
+| --- | --- |
+| 관리 방식 | 엑셀 0 / 개별 도구 6 / ERP 11 / 시스템 연계 15 |
+| 업종 | AI·로보틱스·R&D 25 / 제조·건설 18 / 서비스 12 / 유통 10 / 기타 5 |
+| ERP 활용 | 미사용 0 / 타 ERP 6 / 더존 하 4·중 7·상 10 |
+| 연 매출 | 10억 미만 0 / 50억 미만 5 / 100억 미만 10 / 300억 미만 16 / 300억 이상 20 |
+| 임직원 수 | 10명 미만 0 / 50명 미만 2 / 100명 미만 3 / 100명 이상 5 |
+| 기능 수요 | 회계·인사 3 / 협업 6 / 생산·재고 8 / 프로젝트 8 / 분석 7; 합계 최대 25 |
 
-HTML/CSS/JavaScript로 구성된 정적 사이트입니다. 패키지 설치나 빌드 과정은 없습니다. Python 3이 설치된 환경에서는 저장소 루트에서 다음과 같이 실행합니다.
+총점은 0–100점입니다. Q3의 추가 질문과 Q4·Q5의 세부 선택은 별도 문항으로 세지 않아 진행률은 5문항으로 표시합니다.
 
-```powershell
-python -m http.server 4173 --bind 127.0.0.1
-```
+추천 우선순위:
 
-`http://localhost:4173/`, `/personal.html`, `/admin.html`에서 각 화면을 엽니다.
+1. 맞춤 개발 필요 → Amaranth 10 + OmniEsol.
+2. 표준 기능 + 기존 더존 사용 → PMS.
+3. 그 외 → 50점 미만 WEHAGO / 50점 이상 Amaranth 10.
+4. Amaranth 10이 있으면 ONE AI 추가.
+5. 맞춤 개발과 더존 사용이 겹치면 PMS도 추가.
+6. 더존 활용도 중·상 → 감사 문구.
 
-ERP_TEST를 Vercel에 별도 배포하려면 새 Vercel 프로젝트에서 이 저장소를 가져옵니다. Framework Preset은 `Other`, 루트는 저장소 루트, Build Command는 비워두고 Output Directory는 `.`로 지정합니다. 현재 정적 설정은 `config.js`를 사용하므로 프런트엔드용 추가 환경변수는 필요하지 않습니다. 이번 초기 세팅에서는 새 Vercel 프로젝트나 도메인을 생성하지 않았습니다.
+규칙은 `supabase/functions/_shared/erp-rules.js` 한 곳에 있으며 프런트엔드와 서버에서 공유합니다. 서버는 클라이언트 점수를 신뢰하지 않고 직접 다시 계산합니다. 규칙을 변경하면 프런트엔드와 Edge Function을 함께 다시 배포해야 합니다.
 
-## 기존 Supabase 연결 유지
+제품 설명은 [더존 공식 제품 안내](https://www.douzone.com/solution/business.jsp)를 참고했습니다. PMS의 구체적인 제품·연계 가능 범위는 상세 상담 대상으로 표시했습니다.
 
-- 프로젝트: `uzvonfdifmbqdrsxzbcm`
-- API URL: `https://uzvonfdifmbqdrsxzbcm.supabase.co`
-- 공통 Edge Function: `/functions/v1/axdx-responses`
-- 기업 응답: 위 함수의 기본 경로
-- 개인 응답: 위 함수에 `?type=personal` 추가
-- 브라우저 설정: `config.js`의 공개 publishable key와 네 개 endpoint
-- 서버 소스: `supabase/functions/axdx-responses/index.ts`
+## Supabase
 
-`config.js`는 원본과 동일합니다. 공개 publishable key는 브라우저에서 사용하는 키이며, 서버 `service_role` 키나 관리자 토큰과 다릅니다. 기존 함수의 서버 환경변수와 관리자 토큰은 서버에 그대로 남아 있습니다.
+- 프로젝트: `uzvonfdifmbqdrsxzbcm`.
+- 새 테이블: `public.erp_consulting_responses`.
+- 새 함수: `https://uzvonfdifmbqdrsxzbcm.supabase.co/functions/v1/erp-consulting`.
+- 기존 `axdx_responses`, `personal_axdx_responses`, `axdx_deleted_responses`, `axdx-responses`는 수정하지 않았습니다.
+- 실제 적용 SQL: `erp-schema.sql`. 2026-10-20 Supabase 대시보드 SQL Editor에서 적용했습니다.
+- 테이블 RLS 활성화, `anon`/`authenticated` 테이블 권한 제거, 서버 역할로만 접근.
+- 서버 환경변수: 기존 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN` 재사용. 비밀값은 조회·복사·커밋하지 않았습니다.
+- POST: 연락처·UUID·동의·답변 검사, 서버 점수 재계산, 같은 UUID의 중복 저장 방지.
+- GET: `x-admin-token` 필수, 200건 단위 페이지네이션, 만료 응답 제외.
+- 프런트엔드: 공개 `apikey` 사용. 배포된 함수의 기본 JWT 설정을 변경하지 않은 상태에서 정상 호출을 검증했습니다.
+- 관리자 키는 메모리에서만 유지하며 브라우저 저장소에 저장하지 않습니다.
+- 개인 식별 정보는 공유 링크와 결과 이미지에 포함하지 않습니다. 새로고침 시 미저장 폼 상태는 복원하지 않습니다.
+- 자동 삭제 작업은 설치하지 않았습니다. 응답은 기본 `expires_at = 생성일 + 1년`을 가지며 만료 후 관리자 API 조회에서 제외됩니다. 운영자는 보유 기간이 지난 데이터를 별도로 삭제해야 합니다. 수집 안내에도 이 절차를 명시했습니다.
 
-이는 별도 DB 복제가 아니라 **기존 DB를 공유하는 연결**입니다. 제출·수정·관리자 삭제는 기존 사이트에도 영향을 줍니다. 스키마 SQL 재실행, Edge Function 재배포, 데이터 초기화는 초기 세팅에 필요하지 않으며 수행하지 않았습니다. DB나 함수의 후속 변경은 공유 영향을 확인한 뒤 진행해야 합니다.
-
-## DB 구조
-
-`supabase-schema.sql`을 원본 그대로 보존했습니다. 아래 내용은 해당 파일 기준이며 운영 DB 전체 스키마를 추출한 결과는 아닙니다.
-
-| 테이블 | 기본 키 | 주요 데이터 |
-| --- | --- | --- |
-| `public.axdx_responses` | `id` (uuid) | 기업·담당자·연락처, 응답 JSON, 응답 라벨, 총점·레벨·축별 점수·프로필·모름 개수 |
-| `public.personal_axdx_responses` | `id` (uuid) | 이름·연락처·직무·개인정보 동의, 응답 JSON, 총점·DX/AX/공통 점수·레벨·유형 |
-| `public.axdx_deleted_responses` | `(id, response_type)` | 삭제한 기업/개인 응답의 식별자·삭제 시각; 재전송 시 복원 방지 |
-
-SQL에는 응답 테이블 두 개의 `created_at desc` 인덱스와 세 테이블의 RLS 활성화가 포함되어 있습니다. 프런트엔드는 테이블을 직접 수정하지 않고 Edge Function을 호출합니다. 함수는 점수를 서버에서 계산하고, 관리자 조회·삭제에 `x-admin-token`을 검사합니다.
+대시보드로 함수를 다시 배포할 때는 `npm run build:function`으로 `.tmp/erp-consulting.ts`를 생성한 뒤 기존 `erp-consulting`의 Code에 해당 내용을 넣어 배포합니다. 이 파일은 공유 규칙과 함수 소스를 합친 단일 파일입니다. 새 함수를 만들거나 기존 AX/DX 함수를 덮어쓰지 마세요.
 
 ## 검증 기록 — 2026-10-20
 
-- 기존 배포 사이트: HTTP 200.
-- 배포된 `config.js`와 가져온 파일: 개행 정규화 후 동일.
-- 기업·개인 함수 OPTIONS: HTTP 200, CORS `*`.
-- 관리자 토큰 없는 기업·개인 GET: HTTP 401 `unauthorized`.
-- 빈 객체를 보낸 기업·개인 POST: HTTP 400 `invalid assessment answers`. 함수 소스상 DB 접근 전 유효성 검사에서 종료하는 요청입니다.
-- 공개 API의 세 테이블 HEAD 요청(`select=id&limit=0`): 모두 HTTP 200. 응답 데이터는 내려받지 않았습니다.
-- `config.js`, `app.js`, `personal.js`, `admin.js`: `node --check` 통과.
-
-현재 연결된 Supabase 계정의 프로젝트 목록에는 이 프로젝트가 없으며, 해당 프로젝트의 스키마 조회 도구도 권한 오류를 반환했습니다. 따라서 운영 DB의 전체 컬럼·정책·인덱스와 서버 secrets, 배포된 함수 소스가 저장소와 완전히 동일한지는 확인하지 못했습니다. 이를 직접 관리하거나 전체 스키마를 대조하려면 이 프로젝트에 접근할 수 있는 Supabase 계정 연결이 필요합니다. 정상 데이터 저장 및 관리자 인증 후 조회·삭제는 실행하지 않았습니다.
-
-`.env*`, `.vercel/`, Supabase CLI 임시 디렉터리는 Git에서 제외합니다. 서버 비밀키와 관리자 토큰은 커밋하지 마세요.
+- 추천 분기·점수 경계·입력 거부·서버 재계산·관리자 인증·페이지네이션 등 자동 테스트 16개 통과.
+- 브라우저: 회사 정보 → 5문항 → 분석 → 결과까지 실제 진행.
+- 로보틱스 / 더존 중 / 맞춤 개발 시 64점, Amaranth 10·OmniEsol·ONE AI·PMS 결과 및 감사 문구 확인.
+- 위 가상 응답의 점수·제품·규칙 버전을 SQL로 확인. 검증용 행 `0f981503-d2f5-4522-94d5-e5e836f1b1a3`은 `expires_at`을 검증 시각으로 바꿔 일반 관리자 목록에서 제외했습니다. 물리적으로 삭제하지 않았습니다.
+- 데스크톱과 390px 모바일: 가로 넘침 없음, 전달받은 제품 이미지 정상 로딩.
+- 결과 PNG 파일 생성·시각 검수 통과. PDF는 브라우저 인쇄의 PDF 저장 기능을 사용합니다.
+- 공유 링크로 새로 열었을 때 개인정보 없는 WEHAGO 추천 결과 정상 표시, 서버 재저장 없음.
+- 브라우저 JavaScript 오류 없음.
+- RLS `true`, anon/authenticated SELECT `false`, service_role INSERT `true`를 SQL로 검증.
+- 관리자 토큰 없는 API 조회 차단. 실제 관리자 토큰을 입력한 브라우저 조회·CSV 실데이터 검증은 수행하지 않았습니다.

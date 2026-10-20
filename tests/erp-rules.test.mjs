@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculate,validateAnswers} from '../supabase/functions/_shared/erp-rules.js';
+const base={management:'excel',industry:'other',erp:'none',category:'finance',revenue:'under10',staff:'under10',needs:['finance'],custom:'standard'};
+test('낮은 수요는 WEHAGO',()=>assert.deepEqual(calculate(base).products,['wehago']));
+test('높은 수요는 Amaranth 10과 ONE AI',()=>assert.deepEqual(calculate({...base,management:'integrated',industry:'ai',erp:'other',revenue:'over300',staff:'over100',needs:['operations','project','analytics']}).products,['amaranth','oneai']));
+test('매출이 낮아도 기술 업종과 기능 수요로 Amaranth 추천',()=>{const a={...base,industry:'robotics',needs:['operations','project','analytics','finance']};assert.equal(calculate(a).score,50);assert.ok(calculate(a).products.includes('amaranth'));assert.ok(calculate({...a,industry:'service'}).products.includes('wehago'));});
+test('50점 경계는 Amaranth, 49점은 WEHAGO',()=>{const a={...base,management:'erp',industry:'construction',erp:'other',revenue:'50to100',staff:'10to50',needs:['finance']};assert.equal(calculate(a).score,50);assert.deepEqual(calculate(a).products,['amaranth','oneai']);const b={...a,management:'integrated',revenue:'10to50'};assert.equal(calculate(b).score,49);assert.deepEqual(calculate(b).products,['wehago']);});
+test('더존 사용자는 모든 레벨에서 PMS, 중 이상은 감사 문구',()=>{for(const level of ['low','mid','high']){const r=calculate({...base,erp:'douzone',level});assert.deepEqual(r.products,['pms']);assert.equal(r.thanks,level!=='low');}});
+test('맞춤 개발은 점수와 무관하게 두 ERP와 ONE AI',()=>{assert.deepEqual(calculate({...base,custom:'custom'}).products,['amaranth','omni','oneai']);assert.deepEqual(calculate({...base,erp:'douzone',level:'mid',custom:'custom'}).products,['amaranth','omni','oneai','pms']);});
+test('누락·변조·중복 답변을 거부하고 분기값 검사',()=>{assert.equal(validateAnswers(null),false);for(const patch of [{industry:'fake'},{needs:[]},{needs:['finance','finance']},{needs:['fake']},{erp:'douzone'},{category:'fake'},{custom:'fake'}])assert.equal(validateAnswers({...base,...patch}),false);});
+test('최대 점수는 100, 기능 가중치는 25점 상한',()=>{const r=calculate({...base,management:'integrated',industry:'ai',erp:'douzone',level:'high',revenue:'over300',staff:'over100',needs:['finance','collaboration','operations','project','analytics']});assert.equal(r.score,100);assert.equal(r.breakdown.needs,25);});

@@ -1,0 +1,13 @@
+{
+  "name": "erp-virtual-consulting",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build-site.mjs",
+    "build:function": "node scripts/build-function.mjs"
+  },
+  "engines": { "node": ">=22.18" }
+}

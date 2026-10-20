@@ -1,29 +1,38 @@
-# ERP_TEST — ERP 가상 컨설팅 체크리스트
+# ERP 가상 컨설팅 진단
 
-Figma 시안과 AX/DX 완성도 체크리스트 PDF를 바탕으로 구현한 반응형 웹 진단입니다.
-
-기존 [AX-DX_TEST](https://github.com/leejinho970715-star/AX-DX_TEST)의 `772ea837e2001591340773b2aa9b61366cc1fbb9`를 기준으로 가져온 작업 저장소입니다. 이후 개발·커밋·푸시는 [ERP_TEST](https://github.com/leejinho970715-star/ERP_TEST)에서 진행합니다.
+아이원소프트뱅크의 ERP 추천 진단 사이트입니다. 기존 AX/DX 사이트의 디자인 방향을 참고해 5문항 진단·추천 결과·응답 관리 화면을 구현했습니다.
 
 ## 실행
 
+Node.js 22.18 이상에서 별도 패키지 설치 없이 실행할 수 있습니다.
+
 ```powershell
-python -m http.server 4173
+npm run dev
 ```
 
-- 사용자 진단: `/index.html`
-- 개인 진단: `/personal.html`
-- 관리자 응답 조회 및 CSV: `/admin.html`
+- 진단: `http://127.0.0.1:4173/`
+- ERP 응답 관리: `http://127.0.0.1:4173/erp-admin.html`
+- 테스트: `npm test`
+- 배포 파일 생성: `npm run build` → `dist/`
 
-관리자 화면에서는 응답을 체크박스로 선택해 일괄 삭제할 수 있습니다. 결과 화면에서는 PNG 이미지, 사내 공유용 PDF 다운로드와 SNS 공유를 지원합니다.
+## 진단 흐름
 
-## 데이터 저장
+1. 시작 화면: Pretendard, 하늘색 배경, 독립된 투명 PNG 대시보드.
+2. 회사명·담당자명·이메일과 정보 이용 동의.
+3. 업무 관리 방식, 업종, ERP 종류·활용도/관심 영역, 매출·인원, 필요 기능·맞춤 개발 여부.
+4. 분석 애니메이션 → 추천 이유·점수 내역·제품 카드.
+5. 결과 PNG 저장, PDF 인쇄, 개인정보를 제외한 결과 링크 공유.
 
-현재 `config.js`는 기존 사이트 [axdx-test.vercel.app](https://axdx-test.vercel.app/)과 같은 Supabase 프로젝트(`uzvonfdifmbqdrsxzbcm`)의 배포된 `axdx-responses` Edge Function을 사용합니다. DB 스키마 소스와 Edge Function 소스도 원본 그대로 포함되어 있습니다. 기존 서버 연결을 사용하므로 초기 실행을 위해 SQL을 다시 실행하거나 함수를 재배포할 필요가 없습니다.
+낮은 점수는 WEHAGO, 50점 이상은 Amaranth 10을 추천합니다. 더존 ERP 사용자는 PMS를 추천하며 중·상 활용도에서는 감사 문구를 표시합니다. 맞춤 개발을 선택하면 Amaranth 10과 OmniEsol을 함께 추천합니다. **Amaranth 10이 포함되면 ONE AI를 항상 함께 제안합니다.**
 
-두 사이트의 응답과 관리자 삭제 작업은 같은 DB에 반영됩니다. 브라우저 `localStorage`도 응답 임시 저장·재전송에 사용됩니다. 운영 DB에 연결된 상태에서 정상 진단을 제출하면 실제 응답이 저장됩니다.
+## 데이터 연결
 
-Edge Function의 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN`은 기존 Supabase 서버의 설정을 계속 사용합니다. 관리자 접근 키는 관리자 화면에서 세션마다 입력합니다. 서버 비밀키와 관리자 토큰은 이 저장소에 복사하지 않습니다.
+기존 Supabase 프로젝트 `uzvonfdifmbqdrsxzbcm`에 추가한 `erp_consulting_responses` 테이블과 `erp-consulting` Edge Function을 사용합니다. 기존 AX/DX 테이블·함수와 분리되어 있습니다. 브라우저 설정은 `erp-config.js`이며 서버 키와 관리자 토큰은 Supabase에서만 관리합니다.
 
-관리자 조회 API에는 반드시 인증과 권한 검사를 적용하고, Supabase `service_role` 키를 프런트엔드에 넣지 마세요.
+관리자 화면은 기존 프로젝트의 `ADMIN_TOKEN`으로 서버 인증하며 키를 브라우저 저장소에 보관하지 않습니다. 관리자 조회·페이지 추가 로딩·CSV 다운로드를 제공합니다.
 
-연결 구조, DB 테이블, 검증 결과 및 배포 방법은 [설정 문서](docs/SETUP.md)를 참고하세요.
+## 배포
+
+ERP_TEST를 새 Vercel 프로젝트로 가져오면 `vercel.json`의 빌드·출력 설정을 사용합니다. 이번 작업에서는 Supabase 함수를 배포했으며 새 Vercel 프로젝트는 생성하지 않았습니다. 기존 `axdx-test.vercel.app` 배포는 변경하지 않았습니다.
+
+추천 가중치·배포 절차·검증 기록은 [설정 문서](docs/SETUP.md), 이미지 출처·생성 프롬프트는 [에셋 문서](docs/ASSETS.md)를 참고하세요. 초기 가져오기 기록은 [AX/DX 기준선](docs/AXDX-BASELINE.md)에 보존했습니다.
