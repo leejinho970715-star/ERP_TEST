@@ -1,6 +1,8 @@
 import { options, label, calculate, validateAnswers } from './supabase/functions/_shared/erp-rules.js';
+import { randomMascot, celebrate } from './erp-effects.js';
 
 const app = document.querySelector('#app');
+let stopCelebration = () => {};
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state = { step: -1, contact: { company: '', manager: '', email: '' }, answers: { needs: [] }, consent: false, id: '', result: null, saved: false };
 const titles = ['우리 회사의 업무는\n어떻게 관리하고 있나요?', '우리 회사는\n어떤 업종에 속하나요?', '현재 사용 중인\nERP를 알려주세요.', '우리 회사의\n규모는 어느 정도인가요?', 'ERP로 가장 먼저\n해결하고 싶은 일은 무엇인가요?'];
@@ -13,6 +15,7 @@ const products = {
  pms: { name:'PMS',ko:'프로젝트 관리 솔루션',tag:'이미 갖춘 ERP에 프로젝트의 깊이를',desc:'기존 더존 ERP를 바탕으로 프로젝트 일정·투입 인력·손익 관리의 확장을 제안합니다. 구체적인 PMS 제품과 ERP 연계 가능 여부는 상담에서 확인합니다.',features:['프로젝트별 손익','인력·일정 관리','기존 ERP 연계 검토'],color:'blue',mark:'P' },
 };
 function mount(html, focus = true) {
+ stopCelebration();
  app.innerHTML = html;
  if (focus) { app.focus({ preventScroll: true }); window.scrollTo({top:0,behavior:'instant'}); }
 }
@@ -52,6 +55,7 @@ function question(focus=true) {
  document.querySelector('#next').onclick=()=>{if(!complete(n)){const error=document.querySelector('#question-error');error.textContent='선택하지 않은 항목을 확인해 주세요.';return;}if(n<5){state.step++;question();}else analyze();};
 }
 function analyze() {
+ state.mascot=null;
  state.result=calculate(state.answers);state.id=crypto.randomUUID();state.saved=false;
  mount(`<section class="loading screen"><div class="analysis-orb"><span>✦</span></div><p class="eyebrow">CONNECTING THE DOTS</p><h1>우리 회사의 다음 ERP를<br>찾고 있어요.</h1><p id="loading-copy" role="status" aria-live="polite">업종과 업무 방식을 살펴보고 있어요</p><div class="analysis-bars"><i></i><i></i><i></i></div></section>`);
  setTimeout(()=>{const copy=document.querySelector('#loading-copy');if(copy)copy.textContent='성장 규모와 필요한 기능을 연결하고 있어요';},650);
@@ -70,12 +74,18 @@ function reasons() {
  ];
 }
 function resultPage() {
+ state.mascot ||= randomMascot();
  const r=state.result,a=state.answers;
  const custom=a.custom==='custom',pms=!custom&&a.erp==='douzone';
  const heading=custom?'우리 회사의 방식에 맞춘\n유연한 확장이 필요해요.':pms?'익숙한 ERP에,\n프로젝트의 깊이를 더하세요.':r.score>=50?'흩어진 업무를 연결해,\n성장의 속도를 높여보세요.':'가볍게 시작하고,\n성장에 맞춰 넓혀가세요.';
  const company=state.contact.company||'우리 회사';
  mount(`<section class="results screen"><div class="result-hero"><span class="pill"><i></i> ERP CONSULTING REPORT</span><p class="result-company">${esc(company)}를 위한 맞춤 제안</p><h1>${heading.replace('\n','<br>')}</h1><p>업종과 업무 환경, 필요한 기능을 연결한 진단 결과입니다.</p><div class="result-chips"><span>${label('industry',a.industry)}</span><span>연 매출 ${label('revenue',a.revenue)}</span><span>${a.custom==='custom'?'맞춤 확장 필요':'표준 기능 중심'}</span></div>${r.thanks?'<div class="thanks">✦ 더존 ERP를 사용해주셔서 감사합니다.<br><span>앞으로도 많은 애용 부탁드립니다.</span></div>':''}</div><div class="report-grid"><div class="score-panel panel"><span class="eyebrow">ERP SOLUTION INDEX</span><h2>통합·확장 수요 지수</h2><div class="score-number"><strong>${r.score}</strong><span>/ 100</span></div><div class="score-track"><i style="width:${r.score}%"></i></div><p>점수가 높을수록 업무 통합과 확장에 대한 수요가 커요.</p><small>기업의 우열이나 실제 구매 확률을 의미하지 않습니다.</small></div><div class="reasons panel"><h2>이렇게 분석했어요</h2>${reasons().map((reason,i)=>`<div class="reason"><span>0${i+1}</span><div><h3>${reason.title}</h3><p>${esc(reason.text)}</p></div></div>`).join('')}</div></div><div class="section-title"><div><span class="eyebrow">YOUR NEXT SOLUTION</span><h2>우리 회사에 추천하는 솔루션</h2></div><span>${r.products.includes('oneai')?'Amaranth 10과 ONE AI를 함께 제안해요':'현재 업무에 맞는 다음 선택'}</span></div><div class="product-grid ${r.products.length===1?'single-product':''}">${r.products.map(productCard).join('')}</div><div class="next-panel panel"><div><span class="eyebrow">WHAT’S NEXT?</span><h2>이제, 우리 회사의 업무에<br>직접 대입해 보세요.</h2></div><ol><li><b>업무 정리</b><span>개선하고 싶은 업무와 현재 사용 도구를 정리해요.</span></li><li><b>적용 범위 확인</b><span>필요 모듈·데이터 이전·연계 범위를 상담에서 확인해요.</span></li><li><b>단계별 도입</b><span>우선순위에 따라 작은 범위부터 시작해요.</span></li></ol></div><details class="rules panel"><summary>추천 기준과 내 답변 자세히 보기</summary><p>기획에 따른 가중치 기반 추천입니다. 업무 방식 15점, 업종 25점, ERP 활용 10점, 규모 25점, 기능 수요 25점으로 산정합니다. 일반 추천 기준은 50점이며 맞춤 개발과 기존 더존 사용 여부를 우선 반영합니다.</p><dl>${Object.entries(r.breakdown).map(([key,n])=>`<div><dt>${{management:'업무 방식',industry:'업종 특성',erp:'ERP 활용',scale:'기업 규모',needs:'필요 기능'}[key]}</dt><dd>${n}점</dd></div>`).join('')}<div><dt>사용 ERP</dt><dd>${label('erp',a.erp)}</dd></div><div><dt>${a.erp==='douzone'?'활용 수준':'관심 영역'}</dt><dd>${label(a.erp==='douzone'?'level':'category',a.erp==='douzone'?a.level:a.category)}</dd></div></dl><p class="muted">최종 도입 제품·구축 비용·기능 지원 여부는 상세 상담을 통해 확인해 주세요.</p></details><div class="result-actions">${button('이미지로 저장','download','secondary')}${button('PDF로 저장','print','secondary')}${button('결과 링크 공유','share')}${button('다시 진단하기','restart','text-button')}</div><p class="save-status" id="save-status" role="status">${state.shared?'공유된 진단 결과입니다. 회사명·담당자·이메일은 포함되지 않습니다.':state.saved?'진단 응답이 안전하게 저장되었습니다.':'진단 결과는 현재 화면에서 확인할 수 있습니다.'}</p><p class="product-source">제품 소개 참고: <a href="https://www.douzone.com/solution/business.jsp" target="_blank" rel="noopener">더존 공식 제품 안내 ↗</a></p></section>`);
- document.querySelector('#restart').onclick=()=>{state.answers={needs:[]};state.contact={company:'',manager:'',email:''};state.consent=false;state.result=null;state.shared=false;state.saved=false;history.replaceState(null,'',location.pathname);home();};
+ const mascot=document.createElement('img');
+ mascot.className='result-mascot';mascot.src=state.mascot.src;mascot.alt=`진단 완료를 축하하는 ${state.mascot.name} 캐릭터`;
+ document.querySelector('.result-hero .pill').insertAdjacentElement('afterend',mascot);
+ const confetti=document.createElement('canvas');confetti.className='confetti-canvas';confetti.setAttribute('aria-hidden','true');
+ app.prepend(confetti);stopCelebration=celebrate(confetti);
+ document.querySelector('#restart').onclick=()=>{state.answers={needs:[]};state.contact={company:'',manager:'',email:''};state.consent=false;state.result=null;state.mascot=null;state.shared=false;state.saved=false;history.replaceState(null,'',location.pathname);home();};
  document.querySelector('#print').onclick=()=>window.print();
  document.querySelector('#download').onclick=download;
  document.querySelector('#share').onclick=share;
@@ -101,6 +111,7 @@ async function download() {
  ctx.fillStyle='#14294b';ctx.font='700 42px Pretendard, sans-serif';ctx.fillText('우리 회사에 맞는 ERP 가상 컨설팅 진단',110,200);
  ctx.font='500 24px Pretendard, sans-serif';ctx.fillStyle='#61718d';ctx.fillText(label('industry',state.answers.industry)+' · 연 매출 '+label('revenue',state.answers.revenue),110,250);
  ctx.fillStyle='#386ce5';ctx.font='800 100px Pretendard, sans-serif';ctx.fillText(String(state.result.score),110,395);ctx.font='500 26px Pretendard, sans-serif';ctx.fillText('/ 100  통합·확장 수요 지수',290,390);
+ if(state.mascot){const dog=new Image();dog.src=state.mascot.src;try{await dog.decode();const scale=Math.min(155/dog.naturalWidth,195/dog.naturalHeight);ctx.drawImage(dog,940,260,dog.naturalWidth*scale,dog.naturalHeight*scale);}catch{/* 이미지가 없더라도 진단 결과는 저장합니다. */}}
  let y=485;for(const id of state.result.products){const p=products[id];ctx.fillStyle='#14294b';ctx.font='700 30px Pretendard, sans-serif';ctx.fillText(p.name,110,y);ctx.fillStyle='#61718d';ctx.font='400 21px Pretendard, sans-serif';ctx.fillText(p.tag,430,y);y+=78;}
  ctx.fillStyle='#61718d';ctx.font='400 20px Pretendard, sans-serif';ctx.fillText('업종·업무 환경·성장 규모·필요 기능을 반영한 가중치 기반 추천입니다.',110,920);ctx.fillText('구체적인 제품 기능과 도입 범위는 상세 상담에서 확인해 주세요.',110,955);ctx.fillStyle='#14294b';ctx.font='700 22px Pretendard, sans-serif';ctx.fillText('아이원소프트뱅크',110,1005);
  canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ERP-컨설팅-진단결과.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});

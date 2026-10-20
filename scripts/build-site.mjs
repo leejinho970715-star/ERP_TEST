@@ -1,8 +1,9 @@
 import { mkdir, cp, readFile, writeFile } from 'node:fs/promises';
 const root=new URL('../',import.meta.url),out=new URL('dist/',root);
 await mkdir(out,{recursive:true});
-for(const file of ['index.html','erp.css','erp.js','erp-config.js','erp-admin.html','erp-admin.js'])await cp(new URL(file,root),new URL(file,out));
+for(const file of ['index.html','erp.css','erp.js','erp-effects.js','erp-config.js','erp-admin.html','erp-admin.js'])await cp(new URL(file,root),new URL(file,out));
 await mkdir(new URL('assets/',out),{recursive:true});
+for(const name of ['result-poodle.png','result-pomeranian.png','result-shiba.png'])await cp(new URL('assets/'+name,root),new URL('assets/'+name,out));
 for(const name of ['iwon-logo.png','erp-dashboard.png','erp-background.png','erp-og.png','erp-favicon.svg','erp-touch.png','product-wehago.png','product-amaranth.png','product-omni.png','product-oneai.png'])await cp(new URL('assets/'+name,root),new URL('assets/'+name,out));
 await mkdir(new URL('supabase/functions/_shared/',out),{recursive:true});
 await cp(new URL('supabase/functions/_shared/erp-rules.js',root),new URL('supabase/functions/_shared/erp-rules.js',out));

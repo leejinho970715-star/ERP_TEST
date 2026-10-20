@@ -11,6 +11,13 @@
 | `amaranth10 3D logo.png` | `assets/product-amaranth.png` | Amaranth 10 추천 카드 |
 | `OmniEsol.png` | `assets/product-omni.png` | OmniEsol 추천 카드 |
 | `ONE AI 3D logo.png` | `assets/product-oneai.png` | Amaranth 10과 함께 추천 |
+| `초코푸들.png` | `assets/result-poodle.png` | 랜덤 결과 캐릭터 |
+| `포메라니안.png` | `assets/result-pomeranian.png` | 랜덤 결과 캐릭터 |
+| `시바견.png` | `assets/result-shiba.png` | 랜덤 결과 캐릭터 |
+
+결과를 새로 생성하거나 공유 링크를 열 때 세 강아지 중 한 마리를 같은 확률로 선택합니다. 점수·추천 제품과 무관하며, 같은 결과의 PNG 다운로드에는 화면과 같은 강아지를 사용합니다. 연속해서 같은 강아지가 나올 수도 있습니다.
+
+폭죽은 원본 AX/DX 사이트 `app.js`의 `celebrate()` 효과를 `erp-effects.js`로 가져왔습니다. 동일한 5색·3개 발사점·165개 입자·중력·회전·150프레임 동작을 사용하고, 화면 전환 시 취소 및 모션 감소 설정에서는 생략하도록 처리했습니다. 헤더부터 푸터까지 공통 배경 이미지를 적용합니다.
 
 PMS는 전달된 공식 이미지가 없어 단순한 P 모노그램을 사용합니다. 추후 `erp-config.js`의 `productIcons.pms`에 공식 이미지 경로를 넣으면 교체됩니다.
 

@@ -7,3 +7,16 @@
 @media print{body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.header{height:65px;padding:10px 20px}.header .logo{width:160px}.footer,.result-actions,.save-status,.product-source,.rules{display:none!important}.results{max-width:none;padding:0 10px;margin:0}.result-hero{padding:5px 0 20px}.result-hero h1{font-size:27px}.report-grid{grid-template-columns:1fr 1.5fr;margin-bottom:25px}.score-panel,.reasons,.product-card,.next-panel{box-shadow:none;break-inside:avoid}.product-grid{grid-template-columns:1fr 1fr}.product-card{padding:20px}.product-top{height:95px}.product-icon{width:95px;height:95px}.product-card h3{font-size:25px}.product-description{font-size:11px}.next-panel{margin-top:20px}.result-actions{display:none}.screen{animation:none}.thanks{margin:12px auto;padding:10px}.product-grid,.section-title{break-before:auto}a{text-decoration:none}@page{size:A4;margin:12mm}}
 
 .hero:before{background:linear-gradient(90deg,rgba(249,252,255,.6),rgba(234,245,255,.13)),url('assets/erp-background.png') center/cover no-repeat}.hero:after{opacity:.4}
+
+/* 헤더·본문·푸터를 하나의 배경 이미지 안에 배치합니다. */
+body{min-height:100svh;display:flex;flex-direction:column;isolation:isolate}
+body:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(90deg,rgba(249,252,255,.6),rgba(234,245,255,.13)),url('assets/erp-background.png') center/cover no-repeat}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(#80acd00b 1px,transparent 1px),linear-gradient(90deg,#80acd00b 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(90deg,transparent,#000);opacity:.4}
+.header,.footer{width:100%;background:transparent}
+#app{flex:1;width:100%}
+.hero:before,.hero:after{content:none}
+.result-mascot{display:block;width:min(310px,70vw);height:280px;object-fit:contain;margin:22px auto 0;filter:drop-shadow(0 16px 22px #49689b20);animation:mascot-in .7s cubic-bezier(.2,.9,.25,1.15) both}
+.confetti-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:100;pointer-events:none}
+@keyframes mascot-in{from{opacity:0;transform:translateY(28px) scale(.88)}to{opacity:1;transform:none}}
+@media(max-width:520px){.result-mascot{height:225px;margin-top:18px}}
+@media print{body:before,body:after,.confetti-canvas{display:none}.result-mascot{height:150px;width:180px;margin:10px auto}.result-hero{break-inside:avoid}}
