@@ -1,12 +1,7 @@
-export const mascots = [
-  { src: 'assets/result-poodle.png', name: '초코푸들' },
-  { src: 'assets/result-pomeranian.png', name: '포메라니안' },
-  { src: 'assets/result-shiba.png', name: '시바견' },
-];
-
-export function randomMascot() {
-  return mascots[Math.floor(Math.random() * mascots.length)];
-}
+export const resultCharacters = Object.freeze([
+  { src: 'assets/character-oni.png', name: '온이' },
+  { src: 'assets/character-woni.png', name: '원이' },
+]);
 
 // 원본 AX/DX app.js의 celebrate(): 동일한 색상, 3개 발사점, 165개 입자와 물리 효과.
 export function celebrate(canvas) {

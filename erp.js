@@ -1,5 +1,5 @@
 import { options, label, calculate, validateAnswers } from './supabase/functions/_shared/erp-rules.js';
-import { randomMascot, celebrate } from './erp-effects.js';
+import { resultCharacters, celebrate } from './erp-effects.js';
 
 const app = document.querySelector('#app');
 let stopCelebration = () => {};
@@ -22,7 +22,7 @@ function mount(html, focus = true) {
 function button(text, id, style='primary') { return `<button class="button ${style}" id="${id}" type="button">${text}</button>`; }
 function home() {
  state.step=-1;
- mount(`<section class="hero screen"><div class="hero-copy"><span class="pill"><i></i> 우리 회사의 다음 성장을 위한 첫걸음</span><p class="eyebrow">FIND YOUR NEXT ERP</p><h1>우리 회사에 딱 맞는<br><span>ERP, 함께 찾아볼까요?</span></h1><p class="hero-description">업무 방식부터 우리 회사만의 고민까지.<br>5가지 질문으로 만나는 <strong>ERP 가상 컨설팅 진단</strong></p><div class="hero-actions">${button('우리 회사 ERP 진단하기 <span aria-hidden="true">↗</span>','start')}<span class="time-note">약 3분 · 5가지 질문</span></div><div class="hero-points"><span>01 <b>우리 회사 이해하기</b></span><span>02 <b>업무 니즈 분석하기</b></span><span>03 <b>맞춤 ERP 만나기</b></span></div></div><div class="hero-art"><div class="art-orbit"></div><img class="dashboard" src="assets/erp-dashboard.png" alt="회계, 프로젝트, 재고를 연결하는 3D ERP 대시보드" fetchpriority="high"><span class="float-card float-top"><i class="mini-dot"></i> 흩어진 업무를 하나로</span><span class="float-card float-bottom"><span class="spark">✦</span> 성장에 맞는 솔루션</span></div><div class="hero-bottom"><span class="scroll-line"></span> 복잡한 ERP 선택, 이제 쉽게 시작하세요.</div></section>`,false);
+ mount(`<section class="hero"><div class="hero-copy"><p class="eyebrow">FIND YOUR NEXT ERP</p><h1>우리 회사에 딱 맞는<br><span>ERP, 함께 찾아볼까요?</span></h1><p class="hero-description">업무 방식부터 우리 회사만의 고민까지.<br>5가지 질문으로 만나는 <strong>ERP 가상 컨설팅 진단</strong></p><div class="hero-actions"><span class="time-note">약 3분 · 5가지 질문</span>${button('우리 회사 ERP 진단하기 <span aria-hidden="true">↗</span>','start')}</div><div class="hero-points"><span>01 <b>우리 회사 이해하기</b></span><span>02 <b>업무 니즈 분석하기</b></span><span>03 <b>맞춤 ERP 만나기</b></span></div></div><div class="hero-art"><img class="dashboard" src="assets/erp-dashboard.png" alt="막대그래프와 도넛 차트가 있는 심플한 3D ERP 대시보드" fetchpriority="high" width="1424" height="1104"></div><div class="hero-bottom"><span class="scroll-line"></span> 복잡한 ERP 선택, 이제 쉽게 시작하세요.</div></section>`,false);
  document.querySelector('#start').onclick=()=>{state.step=0;contactPage();};
 }
 function contactPage() {
@@ -55,7 +55,6 @@ function question(focus=true) {
  document.querySelector('#next').onclick=()=>{if(!complete(n)){const error=document.querySelector('#question-error');error.textContent='선택하지 않은 항목을 확인해 주세요.';return;}if(n<5){state.step++;question();}else analyze();};
 }
 function analyze() {
- state.mascot=null;
  state.result=calculate(state.answers);state.id=crypto.randomUUID();state.saved=false;
  mount(`<section class="loading screen"><div class="analysis-orb"><span>✦</span></div><p class="eyebrow">CONNECTING THE DOTS</p><h1>우리 회사의 다음 ERP를<br>찾고 있어요.</h1><p id="loading-copy" role="status" aria-live="polite">업종과 업무 방식을 살펴보고 있어요</p><div class="analysis-bars"><i></i><i></i><i></i></div></section>`);
  setTimeout(()=>{const copy=document.querySelector('#loading-copy');if(copy)copy.textContent='성장 규모와 필요한 기능을 연결하고 있어요';},650);
@@ -84,7 +83,6 @@ function recommendationDetails() {
  return [['현재 업무의 불편',label('pain',a.pain||'unknown')],['운영 범위',label('complexity',a.complexity||'unknown')],['현재 ERP',label('erp',a.erp)],...(a.erp==='douzone'?[['현재 제품',label('currentProduct',a.currentProduct||'unknown')],['자기평가 활용도',label('level',a.level)]]:[['관심 영역',label('category',a.category)]]),['보완할 기능',a.needs.map(id=>label('needs',id)).join(' / ')],['별도 개발·연계',label('custom',a.custom)],['연 매출 (참고)',label('revenue',a.revenue)],['임직원 (참고)',label('staff',a.staff)]];
 }
 function resultPage() {
- state.mascot ||= randomMascot();
  const r=state.result,a=state.answers;
  const headings={clarify:'업무 요구사항을 확인하면,\n더 적합한 후보를 찾을 수 있어요.',maintain:'지금의 방식을 살펴보고,\n필요한 부분만 보완하세요.',optimize:'이미 갖춘 ERP에서,\n개선의 가능성을 먼저 찾아보세요.',basic:'기본 경영 업무부터,\n필요한 범위를 차근차근.',integrate:'연결이 필요한 업무부터,\n통합 범위를 구체화해 보세요.',compare:'표준 기능과 확장 설계를,\n함께 비교해 보세요.'};
  const heading=headings[r.route];
@@ -99,12 +97,12 @@ function resultPage() {
  <div class="next-panel panel"><div><span class="eyebrow">BEFORE YOU DECIDE</span><h2>실제 도입 판단은,<br>업무 시나리오로 확인하세요.</h2></div><ol><li><b>필수 업무·예산 정리</b><span>실사용 인원, 월 거래량, 예산, 담당자와 목표 일정을 확인해요.</span></li><li><b>표준 기능으로 먼저 시연</b><span>보유 모듈과 후보 제품에서 실제 업무가 처리되는지 확인해요.</span></li><li><b>총비용·이전·운영 비교</b><span>라이선스, 개발·연계, 데이터 이전, 유지보수와 교육 비용을 함께 비교해요.</span></li></ol></div>
  <details class="rules panel"><summary>추천 기준과 내 답변 자세히 보기</summary><p>업종·매출·인원에 점수를 더하거나 50점 같은 임계값으로 제품을 나누지 않습니다. 현재 불편, 보완할 기능, 운영 복잡도와 기존 시스템을 기준으로 유지·활용 개선·후보 비교 방향을 정합니다. 자기평가 활용도는 객관적인 성숙도 등급이 아닙니다.</p><dl>${recommendationDetails().map(([key,value])=>`<div><dt>${key}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><p>구체적인 제품명·에디션·모듈 지원, 예산, 거래량, 데이터 이전과 도입 준비도는 상담에서 추가 확인해야 합니다. 본 규칙의 전환율·정확도는 아직 실증 검증되지 않았습니다.</p><p>규칙 버전: ${r.ruleVersion} · 기존 공유 링크도 최신 기준으로 다시 검토합니다.</p></details>
  <div class="result-actions">${button('이미지로 저장','download','secondary')}${button('PDF로 저장','print','secondary')}${button('결과 링크 공유','share')}${button('다시 진단하기','restart','text-button')}</div><p class="save-status" id="save-status" role="status">${state.shared?'공유된 답변을 최신 기준으로 검토했습니다. 회사명·담당자·이메일은 포함되지 않습니다.':state.saved?'진단 응답이 저장되었습니다.':'진단 결과는 현재 화면에서 확인할 수 있습니다.'}</p><p class="product-source">첨부 소개서는 기능 이해를 위한 자료이며, 계약 시점의 제품·에디션·모듈·요금은 별도 확인해 주세요.<br>제품 소개 참고: <a href="https://www.duzon119.co.kr/" target="_blank" rel="noopener">아이원소프트뱅크 ↗</a> · <a href="https://www.douzone.com/product/bportal.jsp" target="_blank" rel="noopener">더존 공식 제품 안내 ↗</a></p></section>`);
- const mascot=document.createElement('img');
- mascot.className='result-mascot';mascot.src=state.mascot.src;mascot.alt=`진단 완료를 축하하는 ${state.mascot.name} 캐릭터`;
- document.querySelector('.result-hero .pill').insertAdjacentElement('afterend',mascot);
+ const characters=document.createElement('div');characters.className='result-characters';
+ characters.innerHTML=resultCharacters.map(character=>`<img class="result-character" src="${character.src}" alt="진단 완료를 축하하는 ${character.name} 캐릭터" width="1254" height="1254">`).join('');
+ document.querySelector('.result-hero .pill').insertAdjacentElement('afterend',characters);
  const confetti=document.createElement('canvas');confetti.className='confetti-canvas';confetti.setAttribute('aria-hidden','true');
  app.prepend(confetti);stopCelebration=celebrate(confetti);
- document.querySelector('#restart').onclick=()=>{state.answers={needs:[]};state.contact={company:'',manager:'',email:''};state.consent=false;state.result=null;state.mascot=null;state.shared=false;state.saved=false;history.replaceState(null,'',location.pathname);home();};
+ document.querySelector('#restart').onclick=()=>{state.answers={needs:[]};state.contact={company:'',manager:'',email:''};state.consent=false;state.result=null;state.shared=false;state.saved=false;history.replaceState(null,'',location.pathname);home();};
  document.querySelector('#print').onclick=()=>window.print();
  document.querySelector('#download').onclick=download;
  document.querySelector('#share').onclick=share;
@@ -130,7 +128,11 @@ async function download() {
  ctx.fillStyle='#14294b';ctx.font='700 42px Pretendard, sans-serif';ctx.fillText('우리 회사에 맞는 ERP 가상 컨설팅 진단',110,200);
  ctx.font='500 24px Pretendard, sans-serif';ctx.fillStyle='#61718d';ctx.fillText(label('industry',state.answers.industry)+' · 연 매출 '+label('revenue',state.answers.revenue),110,250);
  ctx.fillStyle='#386ce5';ctx.font='700 40px Pretendard, sans-serif';ctx.fillText(state.result.routeLabel,110,350);ctx.font='400 22px Pretendard, sans-serif';ctx.fillText('업무 수요를 바탕으로 한 예비 검토 · 기업 등급 아님',110,400);
- if(state.mascot){const dog=new Image();dog.src=state.mascot.src;try{await dog.decode();const scale=Math.min(155/dog.naturalWidth,195/dog.naturalHeight);ctx.drawImage(dog,940,260,dog.naturalWidth*scale,dog.naturalHeight*scale);}catch{/* 이미지가 없더라도 진단 결과는 저장합니다. */}}
+ for(const [index,character] of resultCharacters.entries()){
+  const portrait=new Image();portrait.src=character.src;
+  try{await portrait.decode();const scale=Math.min(85/portrait.naturalWidth,155/portrait.naturalHeight);const width=portrait.naturalWidth*scale,height=portrait.naturalHeight*scale;ctx.drawImage(portrait,920+index*85+(85-width)/2,275+(155-height)/2,width,height);}catch{/* 캐릭터 로딩 실패 시에도 결과를 저장합니다. */}
+ }
+
  let y=485;if(!state.result.products.length){ctx.fillStyle='#61718d';ctx.font='500 26px Pretendard, sans-serif';ctx.fillText('기존 기능 점검 또는 요구사항 추가 확인을 먼저 권합니다.',110,y);}for(const id of state.result.products){const p=products[id];ctx.fillStyle='#14294b';ctx.font='700 30px Pretendard, sans-serif';ctx.fillText(p.name,110,y);ctx.fillStyle='#61718d';ctx.font='400 21px Pretendard, sans-serif';ctx.fillText(p.tag,430,y);y+=78;}
  ctx.fillStyle='#61718d';ctx.font='400 20px Pretendard, sans-serif';ctx.fillText('더존 제품 범위 내 예비 제안이며, 업종·매출에 가산점을 주지 않습니다.',110,920);ctx.fillText('구체적인 제품 기능과 도입 범위는 상세 상담에서 확인해 주세요.',110,955);ctx.fillStyle='#14294b';ctx.font='700 22px Pretendard, sans-serif';ctx.fillText('아이원소프트뱅크',110,1005);
  canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ERP-컨설팅-진단결과.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
