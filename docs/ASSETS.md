@@ -1,5 +1,18 @@
 # 이미지 및 브랜드 에셋
 
+## 사용자 제공 제품소개서
+
+PDF는 내용이나 페이지를 수정하지 않고 URL에 안전한 파일명으로 복사했습니다.
+
+| 제공 파일 | 프로젝트 파일 |
+| --- | --- |
+| `Amaranth10 제품 소개서.pdf` | `brochures/amaranth10.pdf` |
+| `WEHAGO 제품소개서(2).pdf` | `brochures/wehago-overview.pdf` |
+| `WEHAGO 제품소개서.pdf` | `brochures/wehago-services.pdf` |
+| `OmniEsol&ONEAI 제품소개서.pdf` | `brochures/omniesol-oneai.pdf` |
+
+ONE AI는 마지막 통합본의 PDF 7쪽으로 연결합니다. `erp-config.js`에서 제품별 파일·페이지·버튼 문구를 관리합니다. PMS 전용 PDF는 제공되지 않아 공식 웹 안내를 사용합니다. 분석과 개편 제안은 [PRODUCT-REVIEW.md](PRODUCT-REVIEW.md)에 정리했습니다.
+
 ## 사용자 제공 파일
 
 원본 이미지는 수정하지 않고 프로젝트 내 파일명만 정리해 복사했습니다.

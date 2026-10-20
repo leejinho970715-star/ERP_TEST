@@ -25,4 +25,67 @@ body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;back
 .fit-checks{padding-left:17px;color:#778ba6;font-size:12px;line-height:1.9;margin:20px 0 0}
 .no-purchase{padding:30px;margin-bottom:24px}.no-purchase h3{font-size:20px}.no-purchase p{font-size:14px;color:var(--muted);line-height:1.9;margin-bottom:0}
 .subheading{margin-top:26px}
+/* PDF는 버튼을 누를 때만 열어 모바일 초기 로딩을 가볍게 유지합니다. */
+.product-guides{clear:both;margin-top:24px;padding-top:20px;border-top:1px solid #dce5f3}
+.guide-item+.guide-item{margin-top:16px}
+.guide-link{display:flex;flex-direction:column;align-items:flex-start;gap:6px;white-space:normal;text-decoration:none;width:100%;text-align:left;padding:14px 16px;font-size:14px}
+.guide-link small{font-size:11px;line-height:1.6;color:#7187a5;font-weight:400}
+.guide-download{display:inline-flex;align-items:center;min-height:44px;font-size:12px;color:#5578af;text-underline-offset:4px;padding:4px 2px}
+.guide-note{font-size:11px;color:#778ba6;line-height:1.7;margin:0}
+.comparison-note a{display:inline-block;color:#426eae;text-underline-offset:3px;padding:8px 0}
+/* 긴 회사명·선택값과 좁은 화면의 flex/grid 최소 너비를 처리합니다. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.flow,.results,.admin-wrap,.report-grid>*,.product-grid>*,.field-row>*,.choice>span,.reason>div,.next-panel>*{min-width:0}
+.result-company,.result-hero h1,.product-card h3,.product-description,.guide-link,.guide-note,.rules dd,.admin-note,.error,.save-status{overflow-wrap:anywhere}
+.choice>span:nth-child(2){flex:1}
+.choice-check{flex-shrink:0}
+.consent-line label{min-width:0;flex:1}
+.consent-line input{flex-shrink:0}
+.consent-line .text-button{flex-shrink:0;min-height:44px}
+.rules dt{flex:0 0 36%}
+.rules dd{min-width:0;text-align:right}
+.product-top{height:auto;min-height:140px}
+.product-type{max-width:55%;overflow-wrap:anywhere}
+.product-icon{flex-shrink:0;max-width:45%}
+.admin-wrap{width:100%;min-width:0}
+.table-scroll{max-width:100%;overscroll-behavior-x:contain}
+dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
+.dialog-close{min-width:44px;min-height:44px}
+@media(max-width:800px){
+ .dashboard{width:100%;max-width:580px}
+ .field input{font-size:16px;min-height:52px}
+ .footer{flex-wrap:wrap;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+ .product-icon{width:clamp(90px,18vw,140px);height:clamp(90px,18vw,140px)}
+ .admin-auth{padding:24px}
+}
+@media(max-width:640px){.product-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:520px){
+ .dashboard{width:100%}
+ .hero-art{min-height:260px}
+ .flow-actions{display:grid;grid-template-columns:auto minmax(0,1fr)}
+ .flow-actions .button{font-size:13px;min-height:48px;white-space:normal;text-align:center}
+ .flow-actions #next{grid-column:2;grid-row:1}
+ .step-caption{grid-column:1/-1;grid-row:2;text-align:center;font-size:12px;margin-top:4px}
+ .consent-line{align-items:flex-start;gap:8px;flex-wrap:wrap;font-size:12px}
+ .consent-line label{flex-basis:180px;min-height:44px;line-height:1.7}
+ .consent-line .text-button{font-size:12px}
+ .choice b,.compact .choice b{font-size:14px}
+ .choice small,.compact .choice small,.industry-grid .choice small{font-size:12px}
+ .industry-grid .choice b{font-size:14px}
+ .product-icon,.single-product .product-icon{width:130px;height:130px}
+ .product-top,.single-product .product-top{height:auto;min-height:140px}
+ .rules dl>div{align-items:start}
+ .result-actions .button{font-size:12px;white-space:normal}
+ .admin-tools .button{flex:1;white-space:normal;padding:14px}
+ dialog{padding:24px}
+}
+@media(max-width:360px){
+ .industry-grid{grid-template-columns:minmax(0,1fr)}
+ .industry-grid .choice{display:flex;min-height:80px;align-items:center}
+ .industry-grid .choice-number{margin-bottom:0}
+ .product-card{padding:20px}
+ .result-hero h1{font-size:26px}
+ .result-actions{grid-template-columns:minmax(0,1fr)}
+}
+@media print{.product-guides,.comparison-note{display:none}.product-top{min-height:95px}}
 @media(max-width:520px){.route-title{font-size:25px}.scope-notice{font-size:11px;padding:14px}.no-purchase{padding:24px}}
