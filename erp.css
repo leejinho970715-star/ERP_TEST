@@ -98,4 +98,21 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 @media(max-width:520px){.result-characters{max-width:340px;margin-top:18px;gap:4px}.result-character{width:calc(50% - 2px);height:190px}}
 @media print{.result-characters{max-width:270px;margin-top:10px}.result-character{height:140px}}
 .hero-actions .website-link{font-size:13px;line-height:1.6;gap:10px;padding:12px 18px;white-space:normal;text-align:center;justify-content:center;max-width:100%;text-decoration:none}
+/* 헤더와 메인 비주얼의 공통 그리드 및 로고의 투명 여백 보정 */
+:root{--page-gutter:clamp(24px,7vw,101.5px);--brand-width:200px}
+.header,.hero{max-width:1450px;padding-left:var(--page-gutter);padding-right:var(--page-gutter)}
+.header{padding-top:0;padding-bottom:0}
+.header .logo{display:block;width:var(--brand-width);height:auto;margin-left:calc(var(--brand-width) * -.03071017)}
+.hero-copy{min-width:0}
+.hero-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;list-style:none;padding:0;margin:0;width:100%;max-width:540px}
+.hero-journey li{position:relative;display:flex;align-items:center;gap:10px;min-width:0;min-height:82px;padding:14px 12px;border:1px solid #d4e4f9;border-radius:16px;background:linear-gradient(145deg,#ffffffeb,#edf5ffe0);box-shadow:0 6px 18px #4979bd08}
+.hero-journey li:last-child{border-color:#cbd5fa;background:linear-gradient(145deg,#f7f9ff,#eef0ff)}
+.hero-journey li:not(:last-child):after{content:'→';position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:#7397cc;font-size:17px;font-weight:500}
+.journey-number{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border-radius:9px;background:#e0edff;color:#4477c9;font-size:11px;font-weight:750;letter-spacing:.02em}
+.hero-journey li:last-child .journey-number{background:#e1e6ff;color:#626bca}
+.hero-journey strong{font-size:13px;line-height:1.6;color:#49698e;font-weight:650;word-break:keep-all;overflow-wrap:anywhere}
+.hero-journey strong span{display:block}
+@media(max-width:1050px){:root{--page-gutter:6vw}.hero-journey li{flex-direction:column;gap:8px;text-align:center;padding:12px 8px;min-height:104px}}
+@media(max-width:800px){:root{--page-gutter:24px;--brand-width:190px}.hero-journey{margin-inline:auto}}
+@media(max-width:520px){:root{--brand-width:185px}.hero-journey{gap:16px}.hero-journey li{padding:12px 6px;border-radius:13px}.hero-journey strong{font-size:12px}.hero-journey li:not(:last-child):after{right:-14px;font-size:14px}}
 @media(max-width:520px){.route-title{font-size:25px}.scope-notice{font-size:11px;padding:14px}.no-purchase{padding:24px}}
