@@ -20,3 +20,9 @@ body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;back
 @keyframes mascot-in{from{opacity:0;transform:translateY(28px) scale(.88)}to{opacity:1;transform:none}}
 @media(max-width:520px){.result-mascot{height:225px;margin-top:18px}}
 @media print{body:before,body:after,.confetti-canvas{display:none}.result-mascot{height:150px;width:180px;margin:10px auto}.result-hero{break-inside:avoid}}
+.scope-notice{padding:16px 20px;border:1px solid #dce8f7;border-radius:14px;background:#ffffffbd;color:#607d9e;font-size:12px;line-height:1.8;margin-bottom:22px}
+.route-title{display:block;font-size:29px;line-height:1.4;color:#407be0;margin:25px 0}
+.fit-checks{padding-left:17px;color:#778ba6;font-size:12px;line-height:1.9;margin:20px 0 0}
+.no-purchase{padding:30px;margin-bottom:24px}.no-purchase h3{font-size:20px}.no-purchase p{font-size:14px;color:var(--muted);line-height:1.9;margin-bottom:0}
+.subheading{margin-top:26px}
+@media(max-width:520px){.route-title{font-size:25px}.scope-notice{font-size:11px;padding:14px}.no-purchase{padding:24px}}

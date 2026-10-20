@@ -1,4 +1,4 @@
-import { calculate, validateAnswers } from '../_shared/erp-rules.js';
+import { calculate, validateAnswers, normalizeAnswers } from '../_shared/erp-rules.js';
 
 const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'apikey, content-type, x-admin-token', 'access-control-allow-methods': 'GET, POST, OPTIONS', 'cache-control': 'no-store' };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: cors });
@@ -34,8 +34,7 @@ Deno.serve(async (req: Request) => {
     if (!Number.isFinite(consented) || consented > Date.now()+300000 || consented < Date.now()-86400000) return json({error:'Invalid consent timestamp'},400);
     // 브라우저가 전달한 점수 대신 서버의 공유 규칙으로 다시 계산합니다.
     const result = calculate(body.answers);
-    const a = body.answers;
-    const answers = { management:a.management, industry:a.industry, erp:a.erp, ...(a.erp==='douzone'?{level:a.level}:{category:a.category}), revenue:a.revenue, staff:a.staff, needs:a.needs, custom:a.custom };
+    const answers = normalizeAnswers(body.answers);
     const row = {id:body.id,company:body.company.trim(),manager:body.manager.trim(),email:body.email.trim(),answers,score:result.score,breakdown:result.breakdown,recommended_products:result.products,rule_version:result.ruleVersion,privacy_agreed:true,consented_at:new Date(consented).toISOString()};
     const response = await fetch(endpoint, {method:'POST',headers:{...headers,Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(row)});
     return response.ok ? json({ok:true,result},201) : json({error:'Could not save assessment'},502);
