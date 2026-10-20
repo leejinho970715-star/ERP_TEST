@@ -97,4 +97,5 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 .result-character{display:block;width:calc(50% - 4px);height:250px;object-fit:contain;filter:drop-shadow(0 12px 18px #49689b18)}
 @media(max-width:520px){.result-characters{max-width:340px;margin-top:18px;gap:4px}.result-character{width:calc(50% - 2px);height:190px}}
 @media print{.result-characters{max-width:270px;margin-top:10px}.result-character{height:140px}}
+.hero-actions .website-link{font-size:13px;line-height:1.6;gap:10px;padding:12px 18px;white-space:normal;text-align:center;justify-content:center;max-width:100%;text-decoration:none}
 @media(max-width:520px){.route-title{font-size:25px}.scope-notice{font-size:11px;padding:14px}.no-purchase{padding:24px}}
