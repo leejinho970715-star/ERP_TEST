@@ -11,6 +11,7 @@ await mkdir(new URL('supabase/functions/_shared/',out),{recursive:true});
 await cp(new URL('supabase/functions/_shared/erp-rules.js',root),new URL('supabase/functions/_shared/erp-rules.js',out));
 let html=await readFile(new URL('index.html',out),'utf8');
 const host=process.env.SITE_URL||process.env.VERCEL_PROJECT_PRODUCTION_URL||process.env.VERCEL_URL;
-if(host){const site=new URL(host.startsWith('http')?host:'https://'+host);html=html.replaceAll('content="/assets/erp-og.png"',`content="${new URL('assets/erp-og.png',site).href}"`);html=html.replace('</head>',`<meta property="og:url" content="${site.href}"><link rel="canonical" href="${site.href}"></head>`);}
+if(host){const site=new URL(host.startsWith('http')?host:'https://'+host);if(!site.pathname.endsWith('/'))site.pathname+='/';html=html.replaceAll('content="/assets/erp-og.png"',`content="${new URL('assets/erp-og.png',site).href}"`);html=html.replace('</head>',`<meta property="og:url" content="${site.href}"><link rel="canonical" href="${site.href}"></head>`);}
 await writeFile(new URL('index.html',out),html);
+await writeFile(new URL('.nojekyll',out),'');
 console.log('ERP static site built in dist/');

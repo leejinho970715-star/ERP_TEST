@@ -9,7 +9,8 @@
 - 로컬: `npm run dev`, 테스트: `npm test`, 정적 빌드: `npm run build`.
 - Vercel: 새 프로젝트에서 ERP_TEST를 import. `vercel.json`이 `node scripts/build-site.mjs` 빌드 및 `dist` 출력을 지정합니다.
 - OG URL은 빌드 시 `SITE_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, `VERCEL_URL` 순으로 절대 URL을 생성합니다. Vercel 시스템 환경변수를 사용하지 않는 호스팅에서는 `SITE_URL`을 지정하세요.
-- 새 프런트엔드 사이트는 아직 외부 배포하지 않았습니다. 기존 AX/DX Vercel 사이트에는 변경을 적용하지 않았습니다.
+- GitHub Pages: https://leejinho970715-star.github.io/ERP_TEST/ — `.github/workflows/pages.yml`이 `main` 푸시 또는 수동 실행 시 테스트 → 정적 빌드 → Pages 배포를 수행합니다. 빌드의 `SITE_URL`은 Pages 메타데이터를 사용하며 `/ERP_TEST/` 하위 경로를 유지합니다. `.nojekyll`을 출력해 `_shared` 경로가 정적 파일로 제공되도록 합니다.
+- Pages 배포 대상은 `dist/`의 허용된 ERP 정적 파일과 제품소개서만입니다. 관리자 화면은 기존 서버 인증을 사용합니다. 기존 AX/DX Vercel 사이트에는 변경을 적용하지 않았습니다.
 
 ## 추천 규칙 v2
 
