@@ -1,5 +1,7 @@
 import { options, label, calculate, validateAnswers } from './supabase/functions/_shared/erp-rules.js';
 import { resultCharacters, celebrate } from './erp-effects.js';
+import { products } from './erp-products.js';
+import { drawReport, savePng } from './erp-report.js';
 
 const app = document.querySelector('#app');
 let stopCelebration = () => {};
@@ -7,13 +9,6 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const state = { step: -1, contact: { company: '', manager: '', email: '' }, answers: { needs: [] }, consent: false, id: '', result: null, saved: false };
 const titles = ['우리 회사의 업무는\n어떻게 관리하고 있나요?', '우리 회사는\n어떤 업종에 속하나요?', '현재 사용 중인\nERP를 알려주세요.', '우리 회사의\n규모는 어느 정도인가요?', 'ERP로 가장 먼저\n해결하고 싶은 일은 무엇인가요?'];
 const hints = ['관리 도구와 실제 불편을 함께 확인해요.', '업종은 추가 확인할 업무를 정하는 데만 사용하며 점수를 더하지 않아요.', '현재 제품의 활용·설정 개선으로 해결할 수 있는지도 먼저 살펴봐요.', '매출은 선택 공개 정보예요. 추천 방향은 필요한 기능과 운영 범위를 중심으로 정해요.', '현재 부족하거나 추가로 필요한 기능만 골라주세요. ‘보완할 기능 없음’도 선택할 수 있어요.'];
-const products = {
- wehago: { name: 'WEHAGO', ko: '위하고', tag: '필요한 업무 서비스를 선택하는 플랫폼', desc: 'Smart A 10의 회계·급여·물류와 결재·협업, WE PMS 등 필요한 서비스를 검토합니다. 단순 재고·프로젝트 수요도 범위를 확인해 비교할 수 있어요.', features: ['Smart A 10','물류·협업 서비스','WE PMS 범위 확인'], color:'sky', mark:'W' },
- amaranth: { name:'Amaranth 10', ko:'아마란스 10', tag:'연결할수록 커지는 업무의 가능성', desc:'ERP·그룹웨어·문서관리를 하나로 연결합니다. 부서 사이의 정보 흐름을 정리하고 전사 업무를 통합해 보세요.', features:['ERP·그룹웨어 통합','문서·결재 연결','전사 데이터 관리'], color:'violet',mark:'a' },
- omni: { name:'OmniEsol', ko:'옴니이솔', tag:'ERP·확장 솔루션·AI를 연결하는 플랫폼', desc:'ERP·확장 솔루션·그룹웨어·문서관리와 AI를 연결하는 플랫폼입니다. DEWS 개발 도구와 연계·운영 범위는 표준 기능을 먼저 확인한 뒤 비교해 보세요.',features:['ERP·확장 솔루션','DEWS·연계 범위 검토','AI·문서·협업'],color:'cyan',mark:'O' },
- oneai: { name:'ONE AI',ko:'원 AI',tag:'Amaranth 10과 함께 검토하는 AI',desc:'Amaranth 10의 선택형 AI 동반 후보로 제안합니다. 소개서는 OmniEsol과의 통합본이며, 실제 사용 제품에서의 제공 기능·권한·요금·데이터 활용 범위를 따로 확인해 주세요.',features:['AI 업무 지원','문서 활용','Amaranth 10 연계 검토'],color:'pink',mark:'AI' },
- pms: { name:'PMS',ko:'프로젝트 관리 솔루션',tag:'이미 갖춘 ERP에 프로젝트의 깊이를',desc:'프로젝트 일정·투입 인력·예산·원가 관리가 필요할 때 검토합니다. WE PMS와 Amaranth 10 PMS는 구분해야 하며, 현재 ERP와 연결되는 제품·모듈은 상담에서 확인합니다.',features:['프로젝트별 손익','인력·일정 관리','기존 ERP 연계 검토'],color:'blue',mark:'P' },
-};
 function mount(html, focus = true) {
  stopCelebration();
  app.innerHTML = html;
@@ -120,22 +115,7 @@ async function share() {
  try{if(navigator.share)await navigator.share({title:'ERP 가상 컨설팅 진단 결과',url:url.href});else{await navigator.clipboard.writeText(url.href);status.textContent='개인정보가 제외된 결과 링크를 복사했어요.';}}catch(error){if(error.name!=='AbortError')status.textContent='링크 복사 권한을 확인해 주세요.';}
 }
 async function download() {
- await document.fonts.ready;
- const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1100;const ctx=canvas.getContext('2d');
- const grad=ctx.createLinearGradient(0,0,1200,1100);grad.addColorStop(0,'#eff8ff');grad.addColorStop(1,'#e9eaff');ctx.fillStyle=grad;ctx.fillRect(0,0,1200,1100);
- ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(60,60,1080,980,32);ctx.fill();
- ctx.fillStyle='#4478e8';ctx.font='600 20px Pretendard, sans-serif';ctx.fillText('ERP VIRTUAL CONSULTING REPORT',110,125);
- ctx.fillStyle='#14294b';ctx.font='700 42px Pretendard, sans-serif';ctx.fillText('우리 회사에 맞는 ERP 가상 컨설팅 진단',110,200);
- ctx.font='500 24px Pretendard, sans-serif';ctx.fillStyle='#61718d';ctx.fillText(label('industry',state.answers.industry)+' · 연 매출 '+label('revenue',state.answers.revenue),110,250);
- ctx.fillStyle='#386ce5';ctx.font='700 40px Pretendard, sans-serif';ctx.fillText(state.result.routeLabel,110,350);ctx.font='400 22px Pretendard, sans-serif';ctx.fillText('업무 수요를 바탕으로 한 예비 검토 · 기업 등급 아님',110,400);
- for(const [index,character] of resultCharacters.entries()){
-  const portrait=new Image();portrait.src=character.src;
-  try{await portrait.decode();const scale=Math.min(85/portrait.naturalWidth,155/portrait.naturalHeight);const width=portrait.naturalWidth*scale,height=portrait.naturalHeight*scale;ctx.drawImage(portrait,920+index*85+(85-width)/2,275+(155-height)/2,width,height);}catch{/* 캐릭터 로딩 실패 시에도 결과를 저장합니다. */}
- }
-
- let y=485;if(!state.result.products.length){ctx.fillStyle='#61718d';ctx.font='500 26px Pretendard, sans-serif';ctx.fillText('기존 기능 점검 또는 요구사항 추가 확인을 먼저 권합니다.',110,y);}for(const id of state.result.products){const p=products[id];ctx.fillStyle='#14294b';ctx.font='700 30px Pretendard, sans-serif';ctx.fillText(p.name,110,y);ctx.fillStyle='#61718d';ctx.font='400 21px Pretendard, sans-serif';ctx.fillText(p.tag,430,y);y+=78;}
- ctx.fillStyle='#61718d';ctx.font='400 20px Pretendard, sans-serif';ctx.fillText('더존 제품 범위 내 예비 제안이며, 업종·매출에 가산점을 주지 않습니다.',110,920);ctx.fillText('구체적인 제품 기능과 도입 범위는 상세 상담에서 확인해 주세요.',110,955);ctx.fillStyle='#14294b';ctx.font='700 22px Pretendard, sans-serif';ctx.fillText('아이원소프트뱅크',110,1005);
- canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ERP-컨설팅-진단결과.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+ savePng(await drawReport({answers:state.answers,routeLabel:state.result.routeLabel,productIds:state.result.products}),'ERP-컨설팅-진단결과.png');
 }
 const shared=new URLSearchParams(location.search).get('r');
 if(shared){try{if(shared.length>3000)throw Error();const answers=JSON.parse(decodeURIComponent(atob(shared)));if(!validateAnswers(answers))throw Error();state.answers=answers;state.result=calculate(answers);state.shared=true;resultPage();}catch{home();const note=document.createElement('p');note.className='link-error';note.textContent='결과 링크가 올바르지 않습니다. 새로운 진단을 시작해 주세요.';app.prepend(note);}}else home();
