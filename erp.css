@@ -120,6 +120,20 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 .button:disabled{opacity:.45;cursor:not-allowed}
 .select-cell{width:44px;text-align:center!important}
 .select-cell input{width:18px;height:18px;cursor:pointer}
-.report-view{display:block;margin-bottom:6px;font-size:12px}
 .report-dialog{width:min(760px,92vw)}
 .report-image{display:block;width:100%;height:auto;margin-top:16px;border-radius:16px;border:1px solid #dbe7f8}
+/* 버튼 위계: 1단계 .button.primary(채움) · 2단계 .button.secondary(흰 바탕+테두리) · 3단계 .text-button(연한 바탕+테두리) */
+.text-button,.guide-download,.footer .admin-link,.admin-table summary{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 16px;border:1px solid #d3e1f6;border-radius:10px;background:#f3f8ff;color:#3d66b0;font-size:13px;font-weight:600;line-height:1.3;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.text-button:hover,.guide-download:hover,.footer .admin-link:hover,.admin-table summary:hover{background:#e7f0ff;border-color:#adc7ee;text-decoration:none}
+.text-button:focus-visible,.guide-download:focus-visible,.footer .admin-link:focus-visible,.admin-table summary:focus-visible{outline:2px solid #3974ef;outline-offset:2px}
+.button.text-button{padding:14px 20px;min-height:46px;border-radius:12px}
+.guide-download{margin:8px 0 6px}
+.save-status .text-button{margin-left:8px;min-height:36px;padding:6px 12px;font-size:12px}
+.consent-line .text-button{min-height:40px;padding:8px 14px}
+.admin-table summary{min-height:32px;padding:5px 12px;font-size:12px;list-style:none}
+.admin-table summary::-webkit-details-marker{display:none}
+.admin-table summary::after{content:'▾';font-size:10px}
+.admin-table details[open] summary::after{content:'▴'}
+.report-view{display:flex;min-height:32px;padding:5px 12px;font-size:12px;margin-bottom:6px}
+.admin-auth>.text-button{margin-left:8px;vertical-align:bottom}
+@media(max-width:520px){.text-button,.guide-download,.footer .admin-link{font-size:12px}.consent-line .text-button{min-height:44px;font-size:12px}}
