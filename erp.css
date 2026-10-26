@@ -135,5 +135,8 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 .admin-table summary::after{content:'▾';font-size:10px}
 .admin-table details[open] summary::after{content:'▴'}
 .report-view{display:flex;min-height:32px;padding:5px 12px;font-size:12px;margin-bottom:6px}
-.admin-auth>.text-button{margin-left:8px;vertical-align:bottom}
+/* 한 줄로 놓인 버튼: 충분한 좌우 간격, 1·2·3단계 버튼 높이를 44px로 통일 */
+.button-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}
+.admin-tools{gap:12px}
+.button-row .button,.button-row .text-button,.admin-tools .button,.admin-tools .text-button{min-height:44px;height:44px;padding:0 22px;font-size:14px;border-radius:10px;white-space:nowrap}
 @media(max-width:520px){.text-button,.guide-download,.footer .admin-link{font-size:12px}.consent-line .text-button{min-height:44px;font-size:12px}}
