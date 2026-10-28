@@ -140,3 +140,50 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 .admin-tools{gap:12px}
 .button-row .button,.button-row .text-button,.admin-tools .button,.admin-tools .text-button{min-height:44px;height:44px;padding:0 22px;font-size:14px;border-radius:10px;white-space:nowrap}
 @media(max-width:520px){.text-button,.guide-download,.footer .admin-link{font-size:12px}.consent-line .text-button{min-height:44px;font-size:12px}}
+/* v3 결과 페이지·리드 신청 */
+.transition-note{display:block;width:fit-content;margin:0 0 16px;padding:8px 14px;border-radius:999px;background:#eaf3ff;color:#3d66b0;font-size:13px;font-weight:600}
+.result-hero .result-message{font-size:16px;color:#4d6385;line-height:1.7;margin:14px auto 0;max-width:620px}
+.summary-panel,.recommend-panel{padding:30px}
+.summary-panel h2,.recommend-panel h2{font-size:17px;margin:14px 0 16px}
+.summary-lines{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.summary-lines li{position:relative;padding-left:18px;font-size:14px;line-height:1.7;color:#4d6385}
+.summary-lines li:before{content:'';position:absolute;left:0;top:.7em;width:6px;height:6px;border-radius:50%;background:#5b8de8}
+.recommend-panel .route-title{display:block;font-size:24px;line-height:1.4;color:#2f63d8;letter-spacing:-.03em;overflow-wrap:anywhere}
+.recommend-meta{margin:20px 0 0;display:grid;gap:12px}
+.recommend-meta div{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;padding-top:12px;border-top:1px solid #edf1f8}
+.recommend-meta dt{font-size:12px;color:#8a9bb3}
+.recommend-meta dd{margin:0;font-size:14px;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.reasons{margin-bottom:24px}
+.extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:56px}
+.extra-card{padding:28px}
+.extra-card h2{font-size:17px;margin:12px 0 10px}
+.extra-card strong{display:block;font-size:19px;color:#2f63d8;margin-bottom:8px;overflow-wrap:anywhere}
+.extra-card p{font-size:13px;line-height:1.8;color:#6d7e98;margin:0}
+.cta-panel p,.consult-first p{font-size:13px;line-height:1.8;color:#6d7e98}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;align-content:center}
+.cta-row .button,.cta-row .text-button{min-height:48px;height:auto;padding:12px 22px;font-size:14px;border-radius:12px}
+.cta-row.center{justify-content:center;margin-top:28px}
+.cta-row .button:disabled{opacity:.6}
+.consult-first{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:28px;margin:0 0 24px;border-color:#bcd3f6;background:#f6faff}
+.consult-first h2{font-size:19px;line-height:1.5;margin:12px 0 6px}
+.audit-hero{padding-bottom:60px}
+#lead-dialog{width:min(560px,92vw)}
+.lead-form{margin-top:18px}
+.lead-form .field{margin-bottom:16px}
+.lead-form .field small{font-weight:400;color:#8a9bb3}
+.consent-block{border-top:1px solid #edf1f8;margin-top:6px}
+.consent-block .consent-line{border:0;padding:10px 0}
+.lead-form .button-row{margin-top:16px}
+#lead-dialog .button{width:auto;margin-top:0}
+.lead-done{font-size:14px!important;color:var(--ink)!important}
+@media(max-width:800px){.extra-grid{grid-template-columns:1fr}.consult-first{grid-template-columns:1fr}}
+@media(max-width:520px){.summary-panel,.recommend-panel,.extra-card,.consult-first{padding:22px}.recommend-panel .route-title{font-size:20px}.recommend-meta div{grid-template-columns:1fr;gap:4px}.cta-row{display:grid;grid-template-columns:1fr}.cta-row .button,.cta-row .text-button{width:100%}.result-hero .result-message{font-size:14px}.transition-note{font-size:12px}#lead-dialog .button-row .button,#lead-dialog .button-row .text-button{flex:1}}
+.admin-filter{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#4d6385}
+.admin-filter select{height:44px;border:1px solid #d3e1f6;border-radius:10px;padding:0 12px;background:#fff;color:var(--ink);font:inherit;font-weight:500}
+.lead-badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#eef2f8;color:#61718d;font-weight:600;font-size:11px;white-space:nowrap}
+.lead-badge.grade-A{background:#e5f6ec;color:#1d7f46}.lead-badge.grade-B{background:#e7f0ff;color:#2f63d8}.lead-badge.grade-transfer{background:#fff2df;color:#a35f00}
+.admin-table details p{white-space:normal;min-width:260px;line-height:1.7}
+@media(max-width:520px){.admin-filter{flex:1 1 100%}.admin-filter select{flex:1}}
+/* 한글은 어절 단위로 줄바꿈하고, 너무 긴 단어만 강제로 나눕니다. */
+body{word-break:keep-all;overflow-wrap:break-word}
+@media(max-width:520px){.hero-description br{display:none}}

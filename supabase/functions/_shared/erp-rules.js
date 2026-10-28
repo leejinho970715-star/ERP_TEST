@@ -1,60 +1,174 @@
-export const RULE_VERSION = "erp-2026-10-v2";
+// ERP 추천 테스트 v3 규칙 — 「ERP 추천 테스트 기획 가이드라인」(2026-10-23) 기준.
+// 추천은 점수 합산이 아닌 규칙(규모 등급 × 진입 경로 → 예외 규칙 → PMS 함께 제안)으로 정합니다.
+// 브라우저(결과 화면·관리자 화면)와 Supabase Edge Function이 같은 파일을 씁니다.
+export const RULE_VERSION = "erp-2026-10-v3";
+
+const U = ['unknown','잘 모르겠습니다'];
 export const options = {
- management: [["excel","엑셀·수기로 관리해요","여러 파일과 문서에 정보가 나뉘어 있어요",0],["tools","업무별 프로그램을 사용해요","회계, 인사, 협업 도구를 각각 사용해요",6],["erp","ERP로 주요 업무를 관리해요","주요 데이터를 한 시스템에서 관리해요",11],["integrated","ERP와 다른 시스템을 연결해요","여러 부서·시스템의 데이터를 연계해요",15]],
- industry: [["ai","AI·소프트웨어","지식·인력 중심의 기술 비즈니스",25],["robotics","로보틱스·첨단기술","연구개발과 프로젝트 중심의 비즈니스",25],["research","R&D·연구개발","연구 과제와 개발 투자 관리",25],["manufacturing","제조업","생산·자재·재고·원가 관리",18],["construction","건설·엔지니어링","현장별 손익과 프로젝트 관리",18],["service","서비스·전문업","인력·고객·프로젝트 관리",12],["distribution","유통·도소매","매입·매출과 재고 관리",10],["other","기타 업종","업무에 맞는 경영 관리",5]],
- erp: [["douzone","더존 ERP","Smart A, iCUBE, ERP iU, Amaranth 10 등"],["other","다른 ERP","SAP, Oracle, 영림원, 이카운트 등"],["none","아직 사용하지 않아요","첫 ERP 도입을 검토하고 있어요"]],
- level: [["low","하 · 기본 기능 위주","일부 기능만 사용해요"],["mid","중 · 주요 업무 활용","여러 부서에서 주요 기능을 활용해요"],["high","상 · 전사적으로 활용","부서 간 데이터를 연계해 적극 활용해요"]],
- category: [["finance","회계·인사","재무와 인력 관리부터"],["operations","생산·물류·재고","운영 프로세스를 체계적으로"],["project","프로젝트·손익","과제와 수익성을 한눈에"],["all","전사 통합 관리","부서별 업무를 하나로 연결"]],
- revenue: [["under10","10억 미만","",0],["10to50","10억–50억 미만","",5],["50to100","50억–100억 미만","",10],["100to300","100억–300억 미만","",16],["over300","300억 이상","",20]],
- staff: [["under10","10명 미만","",0],["10to50","10–49명","",2],["50to100","50–99명","",3],["over100","100명 이상","",5]],
- needs: [["finance","회계·인사 업무 효율화","반복 업무를 줄이고 정확도를 높이고 싶어요",3],["collaboration","결재·협업·문서 통합","흩어진 업무를 한곳에서 처리하고 싶어요",6],["operations","생산·재고·원가 관리","운영 흐름과 비용을 연결하고 싶어요",8],["project","프로젝트별 손익 관리","일정·투입 인력·수익성을 보고 싶어요",8],["analytics","경영 분석·실시간 리포트","데이터로 빠르게 의사결정하고 싶어요",7]],
- custom: [["standard","표준 기능으로 충분해요","검증된 프로세스로 빠르게 시작하고 싶어요"],["custom","맞춤 개발·시스템 연계가 필요해요","고유한 프로세스나 외부 시스템을 연결해야 해요"]],
+ // 워밍업: 추천 규칙에는 쓰지 않고 결과 문구에만 씁니다.
+ role: [['ceo','대표·경영'],['finance','회계·재무'],['hr','인사·총무'],['it','IT·전산'],['other','그 외 업무']],
+ timeSink: [['reports','자료 취합·보고서 작성'],['approval','결재·문서 처리'],['closing','숫자 맞추기·결산'],['inventory','재고·주문 확인'],['schedule','프로젝트 일정 관리'],['unknown','그때그때 달라 고르기 어렵습니다']],
+ // 공통 1~3
+ industry: [['manufacturing','제조'],['food','식품'],['distribution','유통·무역'],['it','IT·서비스·SI'],['research','연구개발·국책과제'],['robotics','로보틱스'],['construction','건설·현장'],['content','콘텐츠·엔터·게임'],['other','기타'],U],
+ revenue: [['t1','30억 미만'],['t2','30억~300억'],['t3','300억~1,000억'],['t4','1,000억 이상'],U],
+ audit: [['none','해당 없음'],['external','외부감사 대상입니다'],['listing','상장했거나 상장을 준비하고 있습니다'],U],
+ // 4. 경로 분기
+ system: [['excel','엑셀·수기로 관리하고 있습니다','A'],['taxagent','세무사무소 기장으로 관리하고 있습니다','A'],['douzone_switch','더존 ERP(iU·WEHAGO·Smart A 등)를 쓰고 있고, 바꿀 계획이 있습니다','B'],['other_switch','다른 회사 ERP를 쓰고 있고, 바꿀 계획이 있습니다','B'],['douzone_extend','더존 ERP(아마란스10·WEHAGO)를 그대로 쓰면서 기능을 더하고 싶습니다','C'],['douzone_good','더존 ERP를 잘 활용하고 있습니다','audit'],['unknown','잘 모르겠습니다','A']],
+ // 경로 A·B 5~9
+ accounting: [['taxagent','세무사무소에서 정리해 주신 자료를 확인합니다'],['single','회계 담당자 한 분이 꼼꼼히 마감합니다'],['team','회계팀이 함께 결산을 진행합니다'],U],
+ projectNeeds: [['pl','프로젝트·현장별 손익'],['schedule','일정·진척 관리'],['timesheet','인력 투입 시간'],['research','연구 과제·연구비'],['none','따로 필요하지 않습니다'],U],
+ trigger: [['growth','회사가 커지면서 관리할 일이 늘었습니다'],['closing','결산·보고에 시간이 많이 듭니다'],['system','지금 쓰는 프로그램을 바꿀 때가 되었습니다'],['audit','외부감사·투자·상장을 준비하고 있습니다'],['request','경영진이 검토를 요청했습니다'],U],
+ special: [['project_pl','프로젝트·현장별 손익 관리'],['timesheet','타임시트(인력 투입 시간) 관리'],['schedule','프로젝트 일정·진척 관리'],['research','연구과제·연구비 관리'],['integration','전자결재·기존 시스템 연동'],['report_form','우리 회사 양식에 맞춘 보고서'],['production','생산·재고 관리'],['trade','외화·수출입 관리'],['redesign','업무 전반을 우리 회사 방식으로 새로 설계'],U],
+ groupware: [['approval','전자결재'],['attendance','근태·휴가'],['messenger','메신저·협업'],['using','이미 사용하고 있습니다'],['none','필요하지 않습니다'],U],
+ // 경로 C 5~9
+ currentErp: [['amaranth','아마란스10'],['wehago','WEHAGO'],['iu','ERP iU·iCUBE'],U],
+ vendor: [['iwon','아이원소프트뱅크에서 도입했습니다'],['partner','다른 파트너사에서 도입했습니다'],['dept','본사·다른 부서에서 일괄 도입했습니다'],U],
+ scope: [['team','한 부서, 10명 미만'],['multi','여러 부서, 10~50명'],['company','전사, 50명 이상'],U],
+ integration: [['auto','네, 자동으로 이어져야 합니다'],['partial','일부만 이어지면 됩니다'],['no','따로 써도 괜찮습니다'],U],
+ hardTasks: [['many','여러 가지 있습니다'],['few','한두 가지 있습니다'],['none','특별히 없습니다'],U],
+ // 공통 마무리 10~12
+ deploy: [['cloud','클라우드'],['onprem','구축형(자체 서버)'],U],
+ timeline: [['m3','3개월 안'],['m6','6개월 안'],['y1','1년 안'],['research','정보를 모으는 중입니다'],U],
+ concern: [['cost','비용'],['education','교육·사용 적응'],['migration','데이터 이전'],['schedule','도입 일정'],U],
 };
-// 업종·매출·인원에 붙어 있던 v1 가중치는 제거합니다.
-for (const rows of Object.values(options)) for (const row of rows) row.splice(3);
-options.pain = [['none','큰 불편은 없어요','현재 방식으로 필요한 업무를 처리하고 있어요'],['manual','중복 입력·수작업이 많아요','여러 도구 사이에서 같은 내용을 반복 입력해요'],['visibility','재고·손익·보고 확인이 어려워요','데이터가 늦거나 서로 맞지 않는 경우가 있어요'],['unknown','아직 정확히 모르겠어요','담당 부서와 업무 문제를 먼저 확인해야 해요']];
-options.complexity = [['single','단일 사업장·단일 법인','한 조직의 표준 업무가 중심이에요'],['multi','여러 사업장·부서 간 연결','사업장·부서별 데이터 흐름을 연결해야 해요'],['group','여러 법인·해외 운영','법인별 결산·권한·통화 등을 함께 검토해야 해요'],['unknown','확인이 필요해요','운영 범위를 담당자와 확인해야 해요']];
-options.currentProduct = [['smarta','Smart A / Smart A 10','회계 중심의 현재 제품'],['wehago','WEHAGO','현재 사용 중인 경영·협업 플랫폼'],['icube','iCUBE','현재 사용 중인 ERP'],['erpiu','ERP iU','현재 사용 중인 ERP'],['amaranth','Amaranth 10','현재 사용 중인 통합 플랫폼'],['omni','OmniEsol','현재 사용 중인 통합 플랫폼'],['unknown','정확한 제품명은 모르겠어요','상세 상담에서 확인해 주세요']];
-options.revenue.push(['unknown','비공개·확인 필요','추천에 불이익이 없습니다']);
-options.staff.push(['unknown','확인 필요','실제 사용 인원은 상담에서 확인해요']);
-options.custom.push(['unknown','필요한지 아직 모르겠어요','표준 기능으로 해결되는지 먼저 확인하고 싶어요']);
-options.needs.push(['none','당장 보완할 기능은 없어요','현재 방식의 유지·점검 방향을 알고 싶어요']);
-const member = (key,value) => options[key].some(row=>row[0]===value);
-export const label = (key,id) => options[key].find(row=>row[0]===id)?.[1] || "미선택";
+export const multiKeys = ['projectNeeds','special','groupware'];
+// 함께 고를 수 없는 선택지(“필요 없음”, “잘 모름” 등)
+const exclusive = { projectNeeds:['none','unknown'], special:['unknown'], groupware:['using','none','unknown'] };
+const CUSTOM_KEYWORDS = ['project_pl','timesheet','schedule','research','integration','report_form'];
+const PROJECT_KEYWORDS = ['pl','schedule','timesheet','research'];
+const PMS_INDUSTRIES = ['it','research','robotics','construction'];
+
+const member = (key,value) => options[key]?.some(row=>row[0]===value);
+export const label = (key,id) => options[key]?.find(row=>row[0]===id)?.[1] || '미선택';
+export const pathOf = system => options.system.find(row=>row[0]===system)?.[2];
+
+// 응답에 따라 실제로 묻는 문항 목록(키 묶음)입니다. 감사 엔딩이면 경로 문항 없이 끝납니다.
+export function questionKeys(a = {}) {
+ const keys = [['role'],['timeSink'],['industry'],['revenue'],['audit'],['system']];
+ const path = pathOf(a.system);
+ if (!path || path === 'audit') return keys;
+ if (path === 'C') {
+  keys.push(['currentErp','vendor']);
+  if (isTransfer(a)) return keys;
+  keys.push(['special'],['scope'],['integration'],['hardTasks']);
+ } else keys.push(['accounting'],['projectNeeds'],['trigger'],['special'],['groupware']);
+ keys.push(['deploy'],['timeline'],['concern']);
+ return keys;
+}
+const isTransfer = a => a.currentErp === 'amaranth' && ['partner','dept'].includes(a.vendor);
+
+function validMulti(key, list) {
+ if (!Array.isArray(list) || !list.length || list.length > options[key].length || new Set(list).size !== list.length || !list.every(v=>member(key,v))) return false;
+ return list.length === 1 || !list.some(v=>exclusive[key].includes(v));
+}
 export function validateAnswers(a) {
- if (!a || typeof a!=="object") return false;
- if (!["management","industry","erp","revenue","staff","custom"].every(key=>member(key,a[key]))) return false;
- if (a.erp==="douzone" && !member("level",a.level)) return false;
- if (a.erp!=="douzone" && !member("category",a.category)) return false;
- for (const key of ['pain','complexity','currentProduct']) if (a[key]!==undefined && !member(key,a[key])) return false;
- return Array.isArray(a.needs) && a.needs.length>0 && a.needs.length<=5 && new Set(a.needs).size===a.needs.length && a.needs.every(v=>member("needs",v)) && (!a.needs.includes('none') || a.needs.length===1);
+ if (!a || typeof a !== 'object' || Array.isArray(a)) return false;
+ const asked = questionKeys(a).flat();
+ if (Object.keys(a).some(key=>!asked.includes(key))) return false;
+ return asked.every(key=>multiKeys.includes(key) ? validMulti(key,a[key]) : member(key,a[key]));
 }
 export function normalizeAnswers(a) {
- return {management:a.management,industry:a.industry,erp:a.erp,...(a.erp==='douzone'?{level:a.level,currentProduct:a.currentProduct||'unknown'}:{category:a.category}),revenue:a.revenue,staff:a.staff,needs:[...a.needs],custom:a.custom,pain:a.pain||'unknown',complexity:a.complexity||'unknown'};
+ return Object.fromEntries(questionKeys(a).flat().map(key=>[key, multiKeys.includes(key) ? [...a[key]] : a[key]]));
 }
+
+export const tierLabels = { T1:'소규모', T2:'성장기', T3:'중견', T4:'대기업' };
+export const pathLabels = { A:'신규 도입', B:'교체 검토', C:'기존 유지 + 확장', audit:'감사 엔딩' };
+export const resultTypes = {
+ first: { label:'첫 단추형', message:'지금이 체계를 갖추기 가장 좋은 시점입니다.', companion:'세무사 연계' },
+ growth: { label:'성장 엔진형', message:'성장 속도에 맞춰 함께 커지는 시스템을 제안합니다.', companion:'업종 모듈' },
+ complete: { label:'체계 완성형', message:'외부의 기준까지 준비된 경영 관리를 시작합니다.', companion:'내부회계·K-IFRS 대응' },
+ cloud: { label:'클라우드 이사형', message:'익숙한 데이터 그대로, 더 넓은 환경으로 옮겨 갑니다.', companion:'SI 커스터마이징(기존 iU 기능 이식)' },
+ switch: { label:'새 옷 갈아입기형', message:'지금의 업무 흐름에 더 잘 맞는 선택지를 비교해 보십시오.', companion:'데이터 이전 지원' },
+ custom: { label:'맞춤 설계형', message:'표준 기능 위에 우리 회사의 일하는 방식을 더합니다.', companion:'무료 업무 진단 상담' },
+ full: { label:'전면 설계형', message:'회사 고유의 업무 방식에 맞춘 설계 상담으로 안내드립니다.', companion:'' },
+ audit: { label:'감사 인사', message:'더존 ERP와 함께해 주셔서 감사합니다. 앞으로도 많은 활용 부탁드립니다.', companion:'' },
+};
+// 4-2. 업종별 모듈 구성(업종은 제품이 아니라 모듈 구성만 바꿉니다)
+export const industryModules = {
+ manufacturing: { core:'생산·MRP, 원가, 재고', extra:'바코드·창고 관리' },
+ food: { core:'생산, 로트·유통기한 관리, 재고', extra:'품질 이력 관리' },
+ distribution: { core:'영업·구매·재고, 외화·수출입', extra:'WEHAGO 물류관리' },
+ it: { core:'회계·인사, 프로젝트 원가', extra:'PMS' },
+ research: { core:'회계, 연구비 관리', extra:'PMS(과제 관리), RCMS·이지바로 대응' },
+ robotics: { core:'생산·원가, 연구개발 과제 관리', extra:'PMS' },
+ construction: { core:'현장·프로젝트별 원가', extra:'PMS' },
+ content: { core:'프로젝트·IP별 정산, 인사', extra:'PMS, 그룹웨어' },
+ other: { core:'회계·인사 기본 관리', extra:'그룹웨어' },
+ unknown: { core:'회계·인사 기본 관리', extra:'그룹웨어' },
+};
+// 4-1. 규모 등급 × 진입 경로 (C는 현재 ERP를 유지하고 더하는 구성)
+const matrix = {
+ A: { T1:['wehago','WEHAGO'], T2:['amaranth','아마란스10 기본 구성'], T3:['amaranth','아마란스10 확장 구성(내부회계·그룹웨어) + PMS'], T4:['amaranth','아마란스10 확장 구성 + SI'] },
+ Bother: { T1:['wehago','WEHAGO'], T2:['amaranth','아마란스10 기본 구성'], T3:['amaranth','아마란스10 클라우드'], T4:['amaranth','아마란스10 확장 구성 + SI'] },
+ Bdouzone: { T1:['amaranth','아마란스10 클라우드'], T2:['amaranth','아마란스10 클라우드'], T3:['amaranth','아마란스10 클라우드'], T4:['amaranth','아마란스10 확장 구성 + SI'] },
+ C: { T1:'부가 기능·세무사 연계', T2:'PMS 연동 또는 SI 커스터마이징', T3:'PMS + SI 연동 개발', T4:'SI 커스터마이징' },
+};
+const tierRank = t => Number(t.slice(1));
+const maxTier = (...tiers) => 'T'+Math.max(...tiers.map(tierRank));
+
+export function calculate(input) {
+ if (!validateAnswers(input)) throw new Error('모든 문항을 확인해 주세요.');
+ const a = normalizeAnswers(input);
+ const path = pathOf(a.system);
+ const base = { ruleVersion:RULE_VERSION, path, unknownCount:0, consultFirst:false, pms:false, customKeywords:[], products:[] };
+ // 예외 1: 감사 엔딩(더존 ERP 잘 활용) / 아마란스10 + 타 부서·타 파트너 구매 → 감사 엔딩 + 내부 이관
+ if (path === 'audit' || isTransfer(a)) {
+  const transfer = path !== 'audit';
+  return { ...base, path:'audit', transfer, type:'audit', typeLabel:resultTypes.audit.label, message:resultTypes.audit.message, tier:null };
+ }
+ // 워밍업(role·timeSink)을 뺀 “잘 모름” 응답 수
+ const unknownCount = Object.entries(a).filter(([key,v])=>!['role','timeSink'].includes(key) && (Array.isArray(v) ? v.includes('unknown') : v==='unknown')).length;
+ const consultFirst = unknownCount >= 3;
+ // 규모 등급: 매출액으로 먼저 정하고, 상향 조정 변수 중 가장 높은 조건을 적용합니다(하향 없음).
+ const tierBase = consultFirst || a.revenue === 'unknown' ? 'T2' : a.revenue.toUpperCase();
+ const raises = [];
+ if (['external','listing'].includes(a.audit)) raises.push('T3');
+ if (a.accounting === 'team') raises.push('T2');
+ const tier = maxTier(tierBase, ...raises);
+ const customKeywords = [...(a.special||[]).filter(v=>CUSTOM_KEYWORDS.includes(v)), ...(a.projectNeeds||[]).filter(v=>PROJECT_KEYWORDS.includes(v)).map(v=>'project_'+v)];
+ let type, main;
+ const pathMain = path === 'B' ? matrix[a.system === 'douzone_switch' ? 'Bdouzone' : 'Bother'][tier] : path === 'A' ? matrix.A[tier] : null;
+ if (a.special.includes('redesign')) { type='full'; main={ id:'omni', name:'OmniEsol(ERP10) 설계 상담' }; }
+ else if (path === 'C' || customKeywords.length) {
+  type='custom';
+  // 등급별 ERP에 이미 붙은 PMS·SI는 “PMS·SI 맞춤 구성”과 겹치므로 뗍니다.
+  const current = path === 'C' ? (a.currentErp === 'unknown' ? '현재 쓰시는 더존 ERP' : '현재 '+label('currentErp',a.currentErp)) : pathMain[1].replace(/ \+ (PMS|SI)$/,'');
+  main={ id: path === 'C' ? (a.currentErp === 'wehago' ? 'wehago' : a.currentErp === 'amaranth' ? 'amaranth' : 'current') : pathMain[0], name:`${current} + ${path === 'C' ? matrix.C[tier] : 'PMS·SI 맞춤 구성'}` };
+ }
+ else if (path === 'B') { type = a.system === 'douzone_switch' ? 'cloud' : 'switch'; main={ id:pathMain[0], name:pathMain[1] }; }
+ else { type = tier === 'T1' ? 'first' : tier === 'T2' ? 'growth' : 'complete'; main={ id:pathMain[0], name:pathMain[1] }; }
+ const modules = industryModules[a.industry];
+ let companion = resultTypes[type].companion === '업종 모듈' ? `업종 모듈(${modules.core})` : resultTypes[type].companion;
+ // PMS 함께 제안 규칙: 외감·상장(예정), 더존 ERP 사용 중, IT·연구개발·로보틱스·건설 업종 → 함께 제안을 PMS로 고정
+ const douzoneUser = a.system === 'douzone_switch' || path === 'C';
+ const pmsReasons = [];
+ if (['external','listing'].includes(a.audit)) pmsReasons.push('audit');
+ if (douzoneUser) pmsReasons.push('douzone');
+ if (PMS_INDUSTRIES.includes(a.industry)) pmsReasons.push('industry');
+ const pmsInMain = /PMS/.test(main.name);
+ const pms = pmsReasons.length > 0 && !pmsInMain;
+ const proposal = pms ? companion : '';
+ if (pms) companion = 'PMS(프로젝트 관리)';
+ // 함께 보면 좋은 기능 1개: 업종의 함께 제안 모듈(이미 제안한 PMS와 겹치면 핵심 모듈)
+ let feature = modules.extra;
+ if (a.industry === 'distribution' && tier !== 'T1') feature = '외화·수출입 관리';
+ if (/^PMS/.test(feature) && (pms || pmsInMain) || feature === companion) feature = modules.core;
+ const products = [main.id, ...(pms || pmsInMain ? ['pms'] : [])].filter((id,i,list)=>['wehago','amaranth','omni','pms'].includes(id) && list.indexOf(id)===i);
+ return { ...base, type, typeLabel:resultTypes[type].label, message:resultTypes[type].message, tier, tierBase, raises, unknownCount, consultFirst, customKeywords, main, companion, proposal, pms, pmsReasons, feature, modules, products, transfer:false };
+}
+
+// 리드 등급: A 상담·데모 신청 + 전화번호 / B 이메일 + 도입 6개월 이내 / C 그 외 / 이관(아마란스10 타 부서·파트너 구매)
+export function leadGrade(lead, answers, result) {
+ if (result?.transfer) return '이관';
+ if (['consult','demo'].includes(lead.type) && lead.phone) return 'A';
+ if (lead.email && ['m3','m6'].includes(answers.timeline)) return 'B';
+ return 'C';
+}
+export const leadTypes = { none:'응답만', report:'상세 리포트', consult:'무료 상담', demo:'데모 요청', newsletter:'소식 받기', legacy:'이전 버전' };
+
+// v1·v2(이전 규칙) 응답을 관리자 화면에서 읽기 위한 표시용 정보입니다.
 export const routeLabels = {clarify:'요구사항 확인 우선',maintain:'현재 방식 유지·점검',optimize:'기존 ERP 활용 개선',basic:'기본 경영 관리 검토',integrate:'업무 통합 검토',compare:'표준 기능·확장 방식 비교'};
-export function calculate(a) {
- if (!validateAnswers(a)) throw new Error("모든 문항을 확인해 주세요.");
- a=normalizeAnswers(a);
- const hasErp=a.erp!=='none', needs=a.needs.filter(id=>id!=='none');
- const project=needs.includes('project'), operations=needs.includes('operations'), analytics=needs.includes('analytics');
- const missing=['pain','complexity'].filter(key=>a[key]==='unknown');
- if(a.custom==='unknown')missing.push('custom');
- if(a.erp==='douzone'&&a.currentProduct==='unknown')missing.push('currentProduct');
- if(a.erp==='none'&&['erp','integrated'].includes(a.management))missing.push('managementErp');
- let route,products=[];
- if(missing.length || (!needs.length&&a.pain!=='none')) route='clarify';
- else if(!needs.length || (a.pain==='none'&&a.custom==='standard')) route='maintain';
- else if(hasErp && (a.currentProduct==='omni' || (a.custom==='standard'&&a.complexity!=='group'))) route='optimize';
- else if(a.custom==='custom'||a.complexity==='group') {route='compare';products=['amaranth','omni'];}
- else if(operations||project||analytics) {route='integrate';products=['amaranth'];}
- else {route='basic';products=['wehago'];}
- // 기존 제품의 보유 모듈·설정·교육으로 해결할 수 있는지 먼저 확인합니다.
- if(route==='optimize'&&a.currentProduct==='amaranth'&&needs.length) products=['amaranth'];
- if(a.erp==='douzone'&&project&&route!=='clarify') products.push('pms');
- if(products.includes('amaranth'))products.push('oneai');
- const existingProducts=products.filter(id=>id===a.currentProduct);
- const breakdown={route,functionalBreadth:needs.length,project,operations,analytics,custom:a.custom,complexity:a.complexity,pain:a.pain,missing,existingProducts};
- // DB v1의 NOT NULL score 호환용 기능 수 집계입니다. 등급·추천 임계값으로 사용하지 않습니다.
- return {score:needs.length*20,breakdown,products,route,routeLabel:routeLabels[route],missing,existingProducts,thanks:a.erp==='douzone'&&['mid','high'].includes(a.level),ruleVersion:RULE_VERSION};
-}
+export const legacyOptions = {
+ industry:{ai:'AI·소프트웨어',robotics:'로보틱스·첨단기술',research:'R&D·연구개발',manufacturing:'제조업',construction:'건설·엔지니어링',service:'서비스·전문업',distribution:'유통·도소매',other:'기타 업종'},
+ revenue:{under10:'10억 미만','10to50':'10억–50억 미만','50to100':'50억–100억 미만','100to300':'100억–300억 미만',over300:'300억 이상',unknown:'비공개·확인 필요'},
+};

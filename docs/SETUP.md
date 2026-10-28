@@ -12,7 +12,11 @@
 - GitHub Pages: https://leejinho970715-star.github.io/ERP_TEST/ — `.github/workflows/pages.yml`이 `main` 푸시 또는 수동 실행 시 테스트 → 정적 빌드 → Pages 배포를 수행합니다. 빌드의 `SITE_URL`은 Pages 메타데이터를 사용하며 `/ERP_TEST/` 하위 경로를 유지합니다. `.nojekyll`을 출력해 `_shared` 경로가 정적 파일로 제공되도록 합니다.
 - Pages 배포 대상은 `dist/`의 허용된 ERP 정적 파일과 제품소개서만입니다. 관리자 화면은 기존 서버 인증을 사용합니다. 기존 AX/DX Vercel 사이트에는 변경을 적용하지 않았습니다.
 
-## 추천 규칙 v2
+## 추천 규칙 v3 (2026-10-28)
+
+기획 가이드라인(2026-10-23)에 따라 규칙 버전 `erp-2026-10-v3`으로 바꿨습니다. 규모 등급은 매출액으로 먼저 정하고(30억/300억/1,000억 — 기획 초안 값, 영업팀 확정 필요) 외감·상장은 최소 T3, 내부 회계팀은 최소 T2로 상향만 합니다. 결과 유형 7종(첫 단추형·성장 엔진형·체계 완성형·클라우드 이사형·새 옷 갈아입기형·맞춤 설계형·전면 설계형)과 감사 엔딩, 리드 등급(A 상담·데모 + 전화번호, B 이메일 + 도입 6개월 이내, C 그 외, 이관)은 `erp-rules.js`와 `tests/erp-rules.test.mjs`를 기준으로 합니다. 가이드라인에 없는 A + T4는 체계 완성형(아마란스10 확장 구성 + SI)으로 안내합니다.
+
+### 이전 규칙 v2 (기록)
 
 전체 검토 근거와 분기표는 [기획 검토 보고서](PLANNING-REVIEW.md)를 확인하세요. 업종·매출·인원 점수와 50점 임계값을 제거하고 실제 업무의 불편·필요 기능·운영 범위·기존 ERP를 중심으로 제안합니다.
 
@@ -32,7 +36,8 @@
 - 실제 적용 SQL: `erp-schema.sql`. 2026-10-20 Supabase 대시보드 SQL Editor에서 적용했습니다.
 - 테이블 RLS 활성화, `anon`/`authenticated` 테이블 권한 제거, 서버 역할로만 접근.
 - 서버 환경변수: 기존 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN` 재사용. 비밀값은 조회·복사·커밋하지 않았습니다.
-- POST: 연락처·UUID·동의·답변 검사, 서버 점수 재계산, 같은 UUID의 중복 저장 방지.
+- POST(v3): `{id, answers}`는 연락처 없이 응답·결과 유형·규모 등급·진입 경로를 저장하고(같은 id가 있으면 무시), `{id, answers, lead}`는 같은 행에 연락처·동의·리드 등급을 upsert합니다. 결과는 항상 서버가 공유 규칙으로 다시 계산합니다.
+- v3 DB 변경: `erp-schema-v3.sql`(연락처 컬럼 nullable, `lead_type`·`lead_grade`·`phone`·`job_title`·`marketing_agreed`·`result_type`·`size_tier`·`entry_path`·`timeline` 추가, 서버 역할 update 권한). 대시보드 SQL Editor에서 한 번 실행하며 기존 응답은 `lead_type = 'legacy'`로 남습니다. 상세 리포트 메일은 자동 발송하지 않으며, 관리자 화면의 리드 목록을 보고 담당자가 보냅니다.
 - GET: `x-admin-token` 필수, 200건 단위 페이지네이션, 만료 응답 제외.
 - DELETE: `x-admin-token` 필수, 본문 `{"ids": [UUID, …]}`(최대 200건, 중복·형식 오류 거부)로 선택한 응답만 삭제하고 실제 삭제된 id를 돌려줍니다. 관리자 화면의 체크박스 선택 → `선택 삭제`가 이 요청을 보냅니다.
 - 프런트엔드: 공개 `apikey` 사용. 배포된 함수의 기본 JWT 설정을 변경하지 않은 상태에서 정상 호출을 검증했습니다.
