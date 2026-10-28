@@ -76,7 +76,7 @@ export const pathLabels = { A:'신규 도입', B:'교체 검토', C:'기존 유�
 export const resultTypes = {
  first: { label:'첫 단추형', message:'지금이 체계를 갖추기 가장 좋은 시점입니다.', companion:'세무사 연계' },
  growth: { label:'성장 엔진형', message:'성장 속도에 맞춰 함께 커지는 시스템을 제안합니다.', companion:'업종 모듈' },
- complete: { label:'체계 완성형', message:'외부의 기준까지 준비된 경영 관리를 시작합니다.', companion:'내부회계·K-IFRS 대응' },
+ complete: { label:'체계 완성형', message:'외부의 기준까지 준비된 경영 관리를 시작합니다.', companion:'내부회계·K-IFRS18 대응' },
  cloud: { label:'클라우드 이사형', message:'익숙한 데이터 그대로, 더 넓은 환경으로 옮겨 갑니다.', companion:'SI 커스터마이징(기존 iU 기능 이식)' },
  switch: { label:'새 옷 갈아입기형', message:'지금의 업무 흐름에 더 잘 맞는 선택지를 비교해 보십시오.', companion:'데이터 이전 지원' },
  custom: { label:'맞춤 설계형', message:'표준 기능 위에 우리 회사의 일하는 방식을 더합니다.', companion:'무료 업무 진단 상담' },
@@ -153,14 +153,21 @@ export function calculate(input) {
  let feature = modules.extra;
  if (a.industry === 'distribution' && tier !== 'T1') feature = '외화·수출입 관리';
  if (/^PMS/.test(feature) && (pms || pmsInMain) || feature === companion) feature = modules.core;
+ // 모듈 구성: 업종 핵심 모듈 + 표준 모듈로 고른 특수 요구 + 그룹웨어(아마란스10 통합형 / WEHAGO 그룹웨어)
+ const moduleList = [modules.core];
+ if (a.special.includes('production') && !/생산/.test(modules.core)) moduleList.push('생산·재고 관리');
+ if (a.special.includes('trade') && !/외화/.test(modules.core)) moduleList.push('외화·수출입 관리');
+ const gw = (a.groupware||[]).filter(v=>['approval','attendance','messenger'].includes(v)).map(v=>label('groupware',v));
+ const groupware = gw.length ? (main.id === 'wehago' ? `WEHAGO 그룹웨어(${gw.join('·')})` : `그룹웨어 통합(${gw.join('·')})`) : a.groupware?.includes('using') ? '사용 중인 그룹웨어와 연동' : '';
+ if (groupware) moduleList.push(groupware);
  const products = [main.id, ...(pms || pmsInMain ? ['pms'] : [])].filter((id,i,list)=>['wehago','amaranth','omni','pms'].includes(id) && list.indexOf(id)===i);
- return { ...base, type, typeLabel:resultTypes[type].label, message:resultTypes[type].message, tier, tierBase, raises, unknownCount, consultFirst, customKeywords, main, companion, proposal, pms, pmsReasons, feature, modules, products, transfer:false };
+ return { ...base, type, typeLabel:resultTypes[type].label, message:resultTypes[type].message, tier, tierBase, raises, unknownCount, consultFirst, customKeywords, main, companion, proposal, pms, pmsReasons, feature, modules, moduleList, groupware, products, transfer:false };
 }
 
-// 리드 등급: A 상담·데모 신청 + 전화번호 / B 이메일 + 도입 6개월 이내 / C 그 외 / 이관(아마란스10 타 부서·파트너 구매)
+// 리드 등급: A 무료 상담 신청 + 전화번호 / B 이메일 + 도입 6개월 이내 / C 그 외 / 이관(아마란스10 타 부서·파트너 구매)
 export function leadGrade(lead, answers, result) {
  if (result?.transfer) return '이관';
- if (['consult','demo'].includes(lead.type) && lead.phone) return 'A';
+ if (lead.type === 'consult' && lead.phone) return 'A';
  if (lead.email && ['m3','m6'].includes(answers.timeline)) return 'B';
  return 'C';
 }

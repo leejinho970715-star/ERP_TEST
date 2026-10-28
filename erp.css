@@ -187,3 +187,12 @@ dialog{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 /* 한글은 어절 단위로 줄바꿈하고, 너무 긴 단어만 강제로 나눕니다. */
 body{word-break:keep-all;overflow-wrap:break-word}
 @media(max-width:520px){.hero-description br{display:none}}
+.header>a{display:inline-flex;align-items:center;flex-shrink:0;max-width:60%}.header>a .logo{max-width:100%;height:auto}
+/* 짧은 선택지(업종 등)는 휴대폰에서도 2열로 두어 세로로 길게 늘어지지 않게 합니다. */
+@media(max-width:520px){.industry-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.industry-grid .choice{display:flex;align-items:center;gap:8px;min-height:60px;padding:12px 10px}.industry-grid .choice-number{flex-shrink:0;width:22px;height:22px;font-size:10px}.industry-grid .choice b{font-size:13px;line-height:1.35}}
+.lead-form .consent-line{flex-wrap:nowrap;align-items:center;gap:10px}
+.lead-form .consent-line label{flex:1 1 auto;min-width:0;min-height:0}
+.lead-form .consent-line .text-button{flex-shrink:0;min-height:36px;padding:6px 12px;font-size:12px}
+.report-dialog h2{font-size:22px;line-height:1.4}
+.industry-grid .choice[data-value="unknown"]{grid-column:1/-1}
+@media(max-width:520px){.report-dialog h2{font-size:18px}}

@@ -52,12 +52,13 @@ const totalSteps = () => state.answers.system ? questionKeys(state.answers).leng
 function home() {
  state.step=-1;
  mount(`<section class="hero"><div class="hero-copy"><p class="eyebrow">FIND YOUR NEXT ERP</p><h1>우리 회사에 맞는<br><span>ERP, 함께 찾아보겠습니다.</span></h1><p class="hero-description">현재 업무 환경을 점검하고, 회사 규모와 관리 방식에 맞는 <br><strong>더존 ERP 추천 1개와 함께 제안 1개</strong>를 안내합니다.</p><div class="hero-actions"><span class="time-note">약 3~4분 · 14문항 · 결과는 바로 공개</span>${button('우리 회사 ERP 진단하기 <span aria-hidden="true">↗</span>','start')}<a class="button secondary website-link" href="https://www.duzon119.co.kr/">아이원소프트뱅크 웹사이트 바로가기 <span aria-hidden="true">↗</span></a></div><ol class="hero-journey" aria-label="ERP 진단 진행 순서"><li><span class="journey-number" aria-hidden="true">01</span><strong>현재 모습<span>점검하기</span></strong></li><li><span class="journey-number" aria-hidden="true">02</span><strong>함께 성장할<span>방향 찾기</span></strong></li><li><span class="journey-number" aria-hidden="true">03</span><strong>다음 단계<span>제안받기</span></strong></li></ol></div><div class="hero-art"><img class="dashboard" src="assets/erp-dashboard.png" alt="막대그래프와 도넛 차트가 있는 심플한 3D ERP 대시보드" fetchpriority="high" width="1424" height="1104"></div><div class="hero-bottom"><span class="scroll-line"></span> 복잡한 ERP 선택, 이제 쉽게 시작하십시오.</div></section>`,false);
- document.querySelector('#start').onclick=()=>{state.answers={};state.step=0;state.leads=[];question();};
+ document.querySelector('#start').onclick=()=>{state.answers={};state.step=0;state.leads=[];state.lead=null;question();};
 }
 function choiceGroup(key) {
  const multi=multiKeys.includes(key), value=state.answers[key];
  const rows=options[key];
- return `<div class="choices ${rows.length>6?'industry-grid':''}" role="group" aria-label="${esc(questions[key]?.sub?.[key]||questions[key]?.title.replace('\n',' ')||questions.currentErp.sub[key])}">${rows.map(([id,title],i)=>{const selected=multi?value?.includes(id):value===id;return `<button type="button" class="choice ${selected?'selected':''}" data-key="${key}" data-value="${id}" aria-pressed="${!!selected}"><span class="choice-number">${multi?(selected?'✓':'+'):String(i+1).padStart(2,'0')}</span><span><b>${esc(title)}</b></span><span class="choice-check" aria-hidden="true">${selected?'✓':'○'}</span></button>`;}).join('')}</div>`;
+ // 선택지가 많고 짧을 때(업종 등)만 2열로 놓습니다. 긴 문장 선택지는 좁은 화면에서 한 열로 둡니다.
+ return `<div class="choices ${rows.length>6&&rows.every(row=>row[1].length<=14)?'industry-grid':''}" role="group" aria-label="${esc(questions[key]?.sub?.[key]||questions[key]?.title.replace('\n',' ')||questions.currentErp.sub[key])}">${rows.map(([id,title],i)=>{const selected=multi?value?.includes(id):value===id;return `<button type="button" class="choice ${selected?'selected':''}" data-key="${key}" data-value="${id}" aria-pressed="${!!selected}"><span class="choice-number">${multi?(selected?'✓':'+'):String(i+1).padStart(2,'0')}</span><span><b>${esc(title)}</b></span><span class="choice-check" aria-hidden="true">${selected?'✓':'○'}</span></button>`;}).join('')}</div>`;
 }
 function question(focus=true) {
  const keys=questionKeys(state.answers)[state.step], first=keys[0], q=questions[first];
@@ -107,7 +108,7 @@ function reasons(a=state.answers,r=state.result) {
   complete:`외부감사·상장 등 외부 기준에 대응할 수 있도록 내부회계와 그룹웨어까지 갖춘 구성을 골랐습니다.${trigger}`,
   cloud:'지금 쓰시는 더존 ERP의 데이터를 그대로 옮길 수 있어, 익숙한 업무 흐름을 유지하며 더 넓은 환경으로 옮겨 갈 수 있습니다.',
   switch:`다른 회사 ERP에서 옮기시는 경우라, 데이터 이전 지원과 함께 지금의 업무 흐름에 맞는 제품을 비교하도록 했습니다.${trigger}`,
-  custom:r.path==='C'?'지금 쓰시는 ERP는 그대로 두고, 필요한 기능을 더하는 방향으로 구성했습니다.':`선택하신 ${keywords.slice(0,3).map(k=>`‘${k}’`).join(', ')} 업무는 표준 기능에 우리 회사의 방식을 더해야 하므로 맞춤 구성으로 안내합니다.`,
+  custom:r.path==='C'?`지금 쓰시는 ERP는 그대로 두고, ${{team:'한 부서(10명 미만)',multi:'여러 부서(10~50명)',company:'전사(50명 이상)',unknown:'필요한 범위'}[a.scope]}에 필요한 기능을 더하는 방향으로 구성했습니다.${{auto:' 현재 시스템과 데이터가 자동으로 이어지도록 SI 연동을 함께 설계합니다.',partial:' 꼭 필요한 데이터만 이어지도록 연동 범위를 정합니다.'}[a.integration]||''}${{many:' 표준 기능으로 어려웠던 업무는 맞춤 개발 범위로 함께 살펴봅니다.',few:' 표준 기능으로 어려웠던 업무 한두 가지는 설정과 맞춤 개발 중 알맞은 방법을 찾아 드립니다.'}[a.hardTasks]||''}`:`선택하신 ${keywords.slice(0,3).map(k=>`‘${k}’`).join(', ')} 업무는 표준 기능에 우리 회사의 방식을 더해야 하므로 맞춤 구성으로 안내합니다.`,
   full:'업무 전반을 새로 설계하길 원하셔서, 규모와 관계없이 OmniEsol(ERP10) 설계 상담으로 연결합니다.',
  }[r.type];
  return [{title:'지금 가장 시간이 드는 업무부터',text:first+(roleFocus[a.role]||'')},{title:'회사 규모와 현재 시스템에 맞춰',text:scale},{title:'함께 성장할 다음 단계로',text:fit}];
@@ -124,7 +125,7 @@ function resultPage() {
  <div class="result-hero"><span class="pill"><i></i> ERP RECOMMENDATION REPORT</span><p class="result-company">${esc(honorific[a.role])}께 드리는 우리 회사 진단 결과</p><h1>${esc(r.typeLabel)}</h1><p class="result-message">${esc(r.message)}</p><div class="result-chips"><span>${tierLabels[r.tier]} · ${r.tier}</span><span>${pathLabels[r.path]}</span><span>${{cloud:'클라우드 선호',onprem:'구축형 선호',unknown:'구축 방식 상담'}[a.deploy]}</span></div></div>
  ${r.consultFirst?`<div class="panel consult-first"><div><span class="eyebrow">RECOMMENDED NEXT STEP</span><h2>함께 확인하면 더 정확한 결과를 드릴 수 있습니다.</h2><p>‘잘 모르겠습니다’로 답하신 문항이 있어 기본 구성으로 안내합니다. 무료 상담에서 실제 조건을 함께 정리해 드립니다.</p></div><div class="cta-row">${ctaButtons(r)}</div></div>`:''}
  <div class="report-grid"><div class="summary-panel panel"><span class="eyebrow">COMPANY SUMMARY</span><h2>우리 회사 요약</h2><ul class="summary-lines">${summarize(state.answers,state.result).map(line=>`<li>${esc(line)}</li>`).join('')}</ul></div>
- <div class="recommend-panel panel"><span class="eyebrow">RECOMMENDATION</span><h2>주 추천</h2><strong class="route-title">${esc(r.main.name)}</strong><dl class="recommend-meta">${r.companion?`<div><dt>함께 제안</dt><dd>${esc(r.companion)}</dd></div>`:''}${r.proposal?`<div><dt>제안 방식</dt><dd>${esc(r.proposal)}</dd></div>`:''}<div><dt>구축 방식</dt><dd>${deployCopy[a.deploy]}</dd></div></dl></div></div>
+ <div class="recommend-panel panel"><span class="eyebrow">RECOMMENDATION</span><h2>주 추천</h2><strong class="route-title">${esc(r.main.name)}</strong><dl class="recommend-meta">${r.companion?`<div><dt>함께 제안</dt><dd>${esc(r.companion)}</dd></div>`:''}${r.proposal?`<div><dt>제안 방식</dt><dd>${esc(r.proposal)}</dd></div>`:''}<div><dt>모듈 구성</dt><dd>${esc(r.moduleList.join(' + '))}</dd></div><div><dt>구축 방식</dt><dd>${deployCopy[a.deploy]}</dd></div></dl></div></div>
  <div class="reasons panel"><h2>이렇게 추천했습니다</h2>${reasons().map((reason,i)=>`<div class="reason"><span>0${i+1}</span><div><h3>${reason.title}</h3><p>${esc(reason.text)}</p></div></div>`).join('')}</div>
  <div class="extra-grid"><div class="panel extra-card"><span class="eyebrow">ALSO WORTH A LOOK</span><h2>함께 보면 좋은 기능</h2><strong>${esc(r.feature)}</strong><p>${esc(label('industry',a.industry)==='잘 모르겠습니다'?'기본':label('industry',a.industry))} 업종에서 함께 살펴보시면 좋은 기능입니다. 핵심 모듈은 ${esc(r.modules.core)}입니다.</p></div><div class="panel extra-card"><span class="eyebrow">WE'LL SUPPORT YOU</span><h2>${concernTitle}</h2><p>${concernText}</p></div></div>
  ${r.products.length?`<div class="section-title"><div><span class="eyebrow">PRODUCT GUIDE</span><h2>제품 자료</h2></div><span>도입·교체를 확정하는 결과가 아닙니다</span></div><div class="product-grid ${r.products.length===1?'single-product':''}">${r.products.map(productCard).join('')}</div>`:''}
@@ -153,20 +154,20 @@ function decorate() {
  const confetti=document.createElement('canvas');confetti.className='confetti-canvas';confetti.setAttribute('aria-hidden','true');
  app.prepend(confetti);stopCelebration=celebrate(confetti);
 }
-function restart(){state.answers={};state.result=null;state.shared=false;state.leads=[];history.replaceState(null,'',location.pathname);home();}
+function restart(){state.answers={};state.result=null;state.shared=false;state.leads=[];state.lead=null;history.replaceState(null,'',location.pathname);home();}
 
 // 리드 수집: 결과 요약은 입력 없이 공개하고, 상세 리포트·상담·데모·소식 받기를 고를 때만 연락처를 받습니다.
 const leadCopy = {
  report:{ title:'상세 리포트 받기', note:'예상 구성과 도입 절차를 담은 상세 리포트를 메일로 보내 드립니다.', submit:'리포트 신청하기', done:'신청이 접수되었습니다. 입력하신 메일로 상세 리포트를 보내 드리겠습니다.' },
  consult:{ title:'무료 상담 신청', note:'담당자가 영업일 기준 1일 안에 연락드립니다.', submit:'상담 신청하기', done:'상담 신청이 접수되었습니다. 담당자가 영업일 기준 1일 안에 연락드리겠습니다.' },
- demo:{ title:'데모 요청', note:'추천 제품을 실제 화면으로 보여 드릴 일정을 담당자가 조율해 드립니다.', submit:'데모 요청하기', done:'데모 요청이 접수되었습니다. 담당자가 일정 조율을 위해 연락드리겠습니다.' },
+ demo:{ title:'데모 요청', note:'추천 제품을 실제 화면으로 보여 드릴 일정을 담당자가 메일로 조율해 드립니다.', submit:'데모 요청하기', done:'데모 요청이 접수되었습니다. 담당자가 일정 조율을 위해 메일로 연락드리겠습니다.' },
  newsletter:{ title:'새 기능·무료 교육 소식 받기', note:'더존 ERP의 새 기능과 무료 교육 일정을 메일로 안내해 드립니다.', submit:'소식 받기', done:'신청이 완료되었습니다. 새 소식이 있을 때 메일로 안내해 드리겠습니다.' },
 };
 const leadDialog=document.querySelector('#lead-dialog');
 leadDialog.querySelector('.dialog-close').onclick=()=>leadDialog.close();
 function openLead(type) {
- const c=leadCopy[type],phone=type==='consult'||type==='demo',news=type==='newsletter';
- leadDialog.querySelector('.lead-body').innerHTML=`<p class="eyebrow">NEXT STEP</p><h2>${c.title}</h2><p>${c.note}</p><form id="lead-form" class="lead-form" novalidate><label class="field"><span>회사명${news?' <small>(선택)</small>':''}</span><input name="company" autocomplete="organization" maxlength="100" ${news?'':'required'}></label><label class="field">이메일 주소<input name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@company.com" required></label>${phone?`<div class="field-row"><label class="field">담당자명<input name="manager" autocomplete="name" maxlength="60" required></label><label class="field">전화번호<input name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="010-0000-0000" required></label></div>`:''}${news?'':'<label class="field"><span>직책 <small>(선택)</small></span><input name="job_title" autocomplete="organization-title" maxlength="40" placeholder="예: 재무팀 과장"></label>'}<div class="consent-block"><div class="consent-line"><label><input name="privacy" type="checkbox" required> <span>개인정보 수집·이용에 동의합니다. <b>(필수)</b></span></label><button type="button" class="text-button" id="lead-privacy">내용 보기</button></div><div class="consent-line"><label><input name="marketing" type="checkbox" ${news?'required':''}> <span>마케팅 정보 수신에 동의합니다. <b>${news?'(필수)':'(선택)'}</b></span></label></div></div><p class="error" id="lead-error" role="alert"></p><div class="button-row">${'<button class="button primary" type="submit">'+c.submit+'</button>'}<button class="text-button" type="button" id="lead-cancel">닫기</button></div></form>`;
+ const c=leadCopy[type],phone=type==='consult',named=phone||type==='demo',news=type==='newsletter';
+ leadDialog.querySelector('.lead-body').innerHTML=`<p class="eyebrow">NEXT STEP</p><h2>${c.title}</h2><p>${c.note}</p><form id="lead-form" class="lead-form" novalidate><label class="field"><span>회사명${news?' <small>(선택)</small>':''}</span><input name="company" autocomplete="organization" maxlength="100" ${news?'':'required'}></label><label class="field">이메일 주소<input name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@company.com" required></label>${named?`<div class="field-row"><label class="field">담당자명<input name="manager" autocomplete="name" maxlength="60" required></label>${phone?'<label class="field">전화번호<input name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="010-0000-0000" required></label>':''}</div>`:''}${news?'':'<label class="field"><span>직책 <small>(선택)</small></span><input name="job_title" autocomplete="organization-title" maxlength="40" placeholder="예: 재무팀 과장"></label>'}<div class="consent-block"><div class="consent-line"><label><input name="privacy" type="checkbox" required> <span>개인정보 수집·이용에 동의합니다. <b>(필수)</b></span></label><button type="button" class="text-button" id="lead-privacy">내용 보기</button></div><div class="consent-line"><label><input name="marketing" type="checkbox" ${news?'required':''}> <span>마케팅 정보 수신에 동의합니다. <b>${news?'(필수)':'(선택)'}</b></span></label></div></div><p class="error" id="lead-error" role="alert"></p><div class="button-row">${'<button class="button primary" type="submit">'+c.submit+'</button>'}<button class="text-button" type="button" id="lead-cancel">닫기</button></div></form>`;
  const form=leadDialog.querySelector('#lead-form');
  leadDialog.querySelector('#lead-privacy').onclick=()=>document.querySelector('#privacy-dialog').showModal();
  leadDialog.querySelector('#lead-cancel').onclick=()=>leadDialog.close();
@@ -180,11 +181,16 @@ async function submitLead(type,form) {
  if(form.elements.phone&&!/^[0-9+\-\s()]{9,20}$/.test(form.elements.phone.value))form.elements.phone.setCustomValidity('전화번호를 숫자와 - 로 입력해 주십시오.');else form.elements.phone?.setCustomValidity('');
  if(!form.reportValidity())return;
  const data=new FormData(form),get=key=>String(data.get(key)||'');
- const lead={type,company:get('company')||null,email:get('email'),job_title:get('job_title')||null,manager:get('manager')||null,phone:get('phone')||null,privacy_agreed:true,marketing_agreed:data.get('marketing')==='on',consented_at:new Date().toISOString()};
+ const now={type,company:get('company')||null,email:get('email'),job_title:get('job_title')||null,manager:get('manager')||null,phone:get('phone')||null,privacy_agreed:true,marketing_agreed:data.get('marketing')==='on',consented_at:new Date().toISOString()};
+ // 같은 결과에서 여러 번 신청하면 한 행에 합칩니다: 더 적극적인 신청 유형을 남기고, 앞서 받은 이름·전화번호·동의는 지우지 않습니다.
+ const prev=state.lead,rank={newsletter:0,report:1,demo:2,consult:3};
+ const lead=prev?{...now,type:rank[prev.type]>rank[type]?prev.type:type,company:now.company||prev.company,job_title:now.job_title||prev.job_title,manager:now.manager||prev.manager,phone:now.phone||prev.phone,marketing_agreed:now.marketing_agreed||prev.marketing_agreed}:now;
+ lead.requests=[...new Set([...(prev?.requests||[]),type])];
+ if(lead.type!=='consult')lead.phone=null;if(!['consult','demo'].includes(lead.type))lead.manager=null;
  const cfg=window.ERP_CONFIG||{};
  form.querySelector('[type=submit]').disabled=true;
  if(cfg.endpoint){const response=await fetch(cfg.endpoint,{method:'POST',headers:{'content-type':'application/json',apikey:cfg.publishableKey},body:JSON.stringify({id:state.id,answers:state.answers,lead})});if(!response.ok)throw Error();}
- state.leads.push(type);
+ state.leads.push(type);state.lead=lead;
  leadDialog.querySelector('.lead-body').innerHTML=`<p class="eyebrow">THANK YOU</p><h2>${leadCopy[type].title}</h2><p class="lead-done">${leadCopy[type].done}</p><div class="button-row"><button class="button primary" type="button" id="lead-close">확인</button></div>`;
  leadDialog.querySelector('#lead-close').onclick=()=>leadDialog.close();
  document.querySelectorAll(`[data-lead="${type}"]`).forEach(btn=>{btn.disabled=true;btn.textContent+=' · 접수 완료';});

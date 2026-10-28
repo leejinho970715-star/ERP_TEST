@@ -12,7 +12,7 @@ test('경로 A: T1 첫 단추형 WEHAGO, T2 성장 엔진형 아마란스10 기�
  assert.deepEqual(pick(calculate({...base,revenue:'t3'})),{type:'complete',tier:'T3',main:'아마란스10 확장 구성(내부회계·그룹웨어) + PMS'});
  assert.deepEqual(pick(calculate({...base,revenue:'t4'})),{type:'complete',tier:'T4',main:'아마란스10 확장 구성 + SI'});
  assert.equal(calculate({...base,revenue:'t1'}).companion,'세무사 연계');
- assert.equal(calculate({...base,revenue:'t3'}).companion,'내부회계·K-IFRS 대응');
+ assert.equal(calculate({...base,revenue:'t3'}).companion,'내부회계·K-IFRS18 대응');
 });
 test('경로 B: 더존(iU·WEHAGO) → 클라우드 이사형, 타사 → 새 옷 갈아입기형(등급별 제품 + 데이터 이전)',()=>{
  assert.deepEqual(pick(calculate({...base,system:'douzone_switch'})),{type:'cloud',tier:'T2',main:'아마란스10 클라우드'});
@@ -46,4 +46,11 @@ test('응답 검증: 경로에 없는 문항·잘못된 값·“없음”과 다
  for(const bad of [{...base,currentErp:'amaranth'},{...base,revenue:'huge'},{...base,groupware:['none','approval']},{...base,special:[]},{...base,special:['production','production']},{...base,concern:undefined},{...c,accounting:'team'}])assert.equal(validateAnswers(bad),false,JSON.stringify(bad));
  assert.deepEqual(Object.keys(normalizeAnswers(base)),Object.keys(base));
 });
-test('리드 등급',()=>{const r=calculate(base);assert.equal(leadGrade({type:'consult',phone:'010-1234-5678',email:'a@b.co'},base,r),'A');assert.equal(leadGrade({type:'report',email:'a@b.co'},{...base,timeline:'m3'},r),'B');assert.equal(leadGrade({type:'report',email:'a@b.co'},{...base,timeline:'research'},r),'C');assert.equal(leadGrade({type:'newsletter',email:'a@b.co'},{},{transfer:true}),'이관');});
+test('리드 등급',()=>{const r=calculate(base);assert.equal(leadGrade({type:'consult',phone:'010-1234-5678',email:'a@b.co'},base,r),'A');assert.equal(leadGrade({type:'demo',phone:'010-1234-5678',email:'a@b.co'},{...base,timeline:'y1'},r),'C','전화번호는 무료 상담에서만');assert.equal(leadGrade({type:'report',email:'a@b.co'},{...base,timeline:'m3'},r),'B');assert.equal(leadGrade({type:'report',email:'a@b.co'},{...base,timeline:'research'},r),'C');assert.equal(leadGrade({type:'newsletter',email:'a@b.co'},{},{transfer:true}),'이관');});
+test('모듈 구성: 업종 핵심 모듈 + 표준 모듈 특수 요구 + 그룹웨어(아마란스10 통합형 / WEHAGO 그룹웨어)',()=>{
+ assert.deepEqual(calculate({...base,special:['trade'],groupware:['approval','attendance']}).moduleList,['생산·MRP, 원가, 재고','외화·수출입 관리','그룹웨어 통합(전자결재·근태·휴가)']);
+ assert.equal(calculate({...base,revenue:'t1',groupware:['messenger']}).groupware,'WEHAGO 그룹웨어(메신저·협업)');
+ assert.equal(calculate({...base,groupware:['none']}).groupware,'');
+ assert.deepEqual(calculate({...base,industry:'it',special:['production']}).moduleList,['회계·인사, 프로젝트 원가','생산·재고 관리','그룹웨어 통합(전자결재)']);
+ assert.equal(calculate({...base,revenue:'t3'}).companion,'내부회계·K-IFRS18 대응');
+});

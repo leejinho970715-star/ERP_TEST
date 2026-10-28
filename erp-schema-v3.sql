@@ -28,7 +28,8 @@ alter table public.erp_consulting_responses add constraint erp_consulting_v3_lea
   lead_type in ('none','report','consult','demo','newsletter','legacy')
   and (lead_grade is null or lead_grade in ('A','B','C','이관'))
   and (lead_type in ('none') or (privacy_agreed and email is not null and consented_at is not null))
-  and (lead_type not in ('consult','demo') or (manager is not null and phone is not null))
+  and (lead_type <> 'consult' or (manager is not null and phone is not null))
+  and (lead_type <> 'demo' or manager is not null)
   and (phone is null or char_length(phone) between 9 and 20)
   and (job_title is null or char_length(job_title) <= 40)
 );

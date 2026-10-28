@@ -37,7 +37,7 @@
 - 테이블 RLS 활성화, `anon`/`authenticated` 테이블 권한 제거, 서버 역할로만 접근.
 - 서버 환경변수: 기존 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN` 재사용. 비밀값은 조회·복사·커밋하지 않았습니다.
 - POST(v3): `{id, answers}`는 연락처 없이 응답·결과 유형·규모 등급·진입 경로를 저장하고(같은 id가 있으면 무시), `{id, answers, lead}`는 같은 행에 연락처·동의·리드 등급을 upsert합니다. 결과는 항상 서버가 공유 규칙으로 다시 계산합니다.
-- v3 DB 변경: `erp-schema-v3.sql`(연락처 컬럼 nullable, `lead_type`·`lead_grade`·`phone`·`job_title`·`marketing_agreed`·`result_type`·`size_tier`·`entry_path`·`timeline` 추가, 서버 역할 update 권한). 대시보드 SQL Editor에서 한 번 실행하며 기존 응답은 `lead_type = 'legacy'`로 남습니다. 상세 리포트 메일은 자동 발송하지 않으며, 관리자 화면의 리드 목록을 보고 담당자가 보냅니다.
+- v3 DB 변경: `erp-schema-v3.sql`(연락처 컬럼 nullable, `lead_type`·`lead_grade`·`phone`·`job_title`·`marketing_agreed`·`result_type`·`size_tier`·`entry_path`·`timeline` 추가, 서버 역할 update 권한). 대시보드 SQL Editor에서 한 번 실행하며 기존 응답은 `lead_type = 'legacy'`로 남습니다. v3.1 제약 조건 수정(데모 요청은 전화번호 없이)은 `erp-schema-v3-1.sql`입니다. 같은 결과에서 여러 번 신청하면 한 행에 합치고(`lead_type`은 무료 상담 > 데모 > 리포트 > 소식 순으로 가장 적극적인 것), 신청 항목 전체는 `breakdown.requests`에 남깁니다. 상세 리포트 메일은 자동 발송하지 않으며, 관리자 화면의 리드 목록을 보고 담당자가 보냅니다.
 - GET: `x-admin-token` 필수, 200건 단위 페이지네이션, 만료 응답 제외.
 - DELETE: `x-admin-token` 필수, 본문 `{"ids": [UUID, …]}`(최대 200건, 중복·형식 오류 거부)로 선택한 응답만 삭제하고 실제 삭제된 id를 돌려줍니다. 관리자 화면의 체크박스 선택 → `선택 삭제`가 이 요청을 보냅니다.
 - 프런트엔드: 공개 `apikey` 사용. 배포된 함수의 기본 JWT 설정을 변경하지 않은 상태에서 정상 호출을 검증했습니다.

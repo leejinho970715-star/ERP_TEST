@@ -55,14 +55,18 @@ Deno.serve(async (req: Request) => {
       const response = await fetch(endpoint, {method:'POST',headers:{...headers,Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({...row,lead_type:'none',privacy_agreed:false})});
       return response.ok ? json({ok:true,result},201) : json({error:'Could not save assessment'},502);
     }
-    const lead = body.lead, needsContact = ['consult','demo'].includes(lead?.type), optional = (v: unknown, max: number) => v === null || v === undefined || validText(v,max);
+    // 전화번호는 무료 상담에서만 받습니다. 데모 요청은 담당자명까지 받습니다.
+    const lead = body.lead, needsPhone = lead?.type === 'consult', needsName = needsPhone || lead?.type === 'demo', optional = (v: unknown, max: number) => v === null || v === undefined || validText(v,max);
     if (!lead || !['report','consult','demo','newsletter'].includes(lead.type) || !validText(lead.email,254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim()) || lead.privacy_agreed !== true || typeof lead.marketing_agreed !== 'boolean' || (lead.type === 'newsletter' && !lead.marketing_agreed)) return json({error:'Invalid lead'},400);
-    if (!(lead.type === 'newsletter' ? optional(lead.company,100) : validText(lead.company,100)) || !optional(lead.job_title,40) || !(needsContact ? validText(lead.manager,60) && typeof lead.phone === 'string' && /^[0-9+\-\s()]{9,20}$/.test(lead.phone.trim()) : lead.manager == null && lead.phone == null)) return json({error:'Invalid lead'},400);
+    if (!(lead.type === 'newsletter' ? optional(lead.company,100) : validText(lead.company,100)) || !optional(lead.job_title,40) || !(needsName ? validText(lead.manager,60) : lead.manager == null) || !(needsPhone ? typeof lead.phone === 'string' && /^[0-9+\-\s()]{9,20}$/.test(lead.phone.trim()) : lead.phone == null)) return json({error:'Invalid lead'},400);
+    // 같은 결과에서 신청한 항목(리포트·상담·데모·소식) 전체. 행에는 가장 적극적인 신청 유형 하나만 lead_type으로 남습니다.
+    const requests = lead.requests === undefined ? [lead.type] : lead.requests;
+    if (!Array.isArray(requests) || !requests.length || requests.length > 4 || new Set(requests).size !== requests.length || !requests.every((t: unknown) => ['report','consult','demo','newsletter'].includes(t as string)) || !requests.includes(lead.type)) return json({error:'Invalid lead'},400);
     const consented = Date.parse(lead.consented_at);
     if (!Number.isFinite(consented) || consented > Date.now()+300000 || consented < Date.now()-86400000) return json({error:'Invalid consent timestamp'},400);
     const trim = (v: unknown) => typeof v === 'string' && v.trim() ? v.trim() : null;
     const contact = {lead_type:lead.type,company:trim(lead.company),email:lead.email.trim(),job_title:trim(lead.job_title),manager:trim(lead.manager),phone:trim(lead.phone),privacy_agreed:true,marketing_agreed:lead.marketing_agreed,consented_at:new Date(consented).toISOString()};
-    const response = await fetch(`${endpoint}?on_conflict=id`, {method:'POST',headers:{...headers,Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({...row,...contact,lead_grade:leadGrade({type:lead.type,email:contact.email,phone:contact.phone},answers,result)})});
+    const response = await fetch(`${endpoint}?on_conflict=id`, {method:'POST',headers:{...headers,Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({...row,breakdown:{...result,requests},...contact,lead_grade:leadGrade({type:lead.type,email:contact.email,phone:contact.phone},answers,result)})});
     return response.ok ? json({ok:true,result},201) : json({error:'Could not save lead'},502);
   } catch { return json({error:'Service temporarily unavailable'},503); }
 });

@@ -74,7 +74,7 @@ export async function drawResultCard({ answers, result, summary, contact }) {
   ctx.fillStyle='#14294b';ctx.font='700 22px Pretendard, sans-serif';ctx.fillText('우리 회사 요약',110,y);y+=40;
   ctx.fillStyle='#4d6385';ctx.font='400 21px Pretendard, sans-serif';for(const line of summary)y=wrap(ctx,'·  '+line,110,y,980,32)+4;
   y+=26;const top=y-12;
-  const rows=[['함께 제안',result.companion],['함께 보면 좋은 기능',result.feature]].filter(row=>row[1]);
+  const rows=[['함께 제안',result.companion],['모듈 구성',(result.moduleList||[]).join(' + ')],['함께 보면 좋은 기능',result.feature]].filter(row=>row[1]);
   const box=draw=>{
    if(draw){ctx.fillStyle='#8a9bb3';ctx.font='600 19px Pretendard, sans-serif';ctx.fillText('주 추천',130,y+30);}
    ctx.fillStyle='#2f63d8';ctx.font='800 32px Pretendard, sans-serif';let by=wrap(ctx,result.main.name,130,y+76,920,44,draw);
