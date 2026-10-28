@@ -37,4 +37,4 @@ npm run dev
 
 ERP_TEST를 새 Vercel 프로젝트로 가져오면 `vercel.json`의 빌드·출력 설정을 사용합니다. 이번 작업에서는 Supabase 함수를 배포했으며 새 Vercel 프로젝트는 생성하지 않았습니다. 기존 `axdx-test.vercel.app` 배포는 변경하지 않았습니다.
 
-추천 가중치·배포 절차·검증 기록은 [설정 문서](docs/SETUP.md), 이미지 출처·생성 프롬프트는 [에셋 문서](docs/ASSETS.md)를 참고하세요. 초기 가져오기 기록은 [AX/DX 기준선](docs/AXDX-BASELINE.md)에 보존했습니다.
+작업 내역과 다음에 정할 것은 [다음 단계 문서](docs/NEXT-STEPS.md), 추천 가중치·배포 절차·검증 기록은 [설정 문서](docs/SETUP.md), 이미지 출처·생성 프롬프트는 [에셋 문서](docs/ASSETS.md)를 참고하세요. 초기 가져오기 기록은 [AX/DX 기준선](docs/AXDX-BASELINE.md)에 보존했습니다.
